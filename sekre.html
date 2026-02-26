@@ -478,6 +478,31 @@
       color: white;
     }
 
+    /* Footer WhatsApp Button */
+    .footer-whatsapp-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #25D366;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+
+    .footer-whatsapp-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+    }
+
+    .footer-whatsapp-btn i {
+      font-size: 24px;
+    }
+
     /* Deadline reminder badge */
     .deadline-reminder {
       position: absolute;
@@ -1925,6 +1950,11 @@
           <a href="https://www.instagram.com/seshabie" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
             <i class="fab fa-instagram" style="color: var(--accent-tertiary);"></i>
           </a>
+          
+          <!-- WhatsApp Footer Button -->
+          <button onclick="shareFooterWhatsApp()" class="footer-whatsapp-btn" title="Hubungi via WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+          </button>
         </div>
         
         <p style="color: var(--text-secondary);">© 2026 Sekre MPK. All rights reserved.</p>
@@ -2228,7 +2258,7 @@
 
     // WhatsApp numbers for different users
     const WHATSAPP_NUMBERS = {
-      sekre1: "62812345678",
+      sekre1: "6283852249821",
       sekre2: "628888552922"
     };
 
@@ -2799,9 +2829,9 @@
       countdownIntervals[taskId] = setInterval(updateCountdown, 1000);
     }
 
-    // ==================== WHATSAPP SHARE FUNCTION dengan Nomor Berdasarkan Current User ====================
+    // ==================== WHATSAPP SHARE FUNCTION (TANPA OPSI) ====================
     window.shareTaskWhatsApp = function(taskId, title, desc, deadline, priority, assignee) {
-      // Gunakan nomor berdasarkan currentUser yang sedang login
+      // Tentukan nomor berdasarkan currentUser yang sedang login
       let phoneNumber;
       
       if (currentUser === 'sekre1') {
@@ -2810,37 +2840,24 @@
         phoneNumber = WHATSAPP_NUMBERS.sekre2;
       }
       
-      // Jika tugas untuk kedua sekre, tawarkan pilihan (tetap menggunakan current user sebagai default)
-      if (assignee === 'both') {
-        Swal.fire({
-          title: 'Pilih Tujuan',
-          text: 'Tugas ini untuk kedua Sekre. Mau dikirim ke siapa?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: `Sekre 1 (${WHATSAPP_NUMBERS.sekre1})`,
-          denyButtonText: `Sekre 2 (${WHATSAPP_NUMBERS.sekre2})`,
-          cancelButtonText: 'Batal',
-          showDenyButton: true,
-          background: 'var(--bg-card)',
-          color: 'var(--text-primary)'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            sendWhatsApp(WHATSAPP_NUMBERS.sekre1, title, desc, deadline, priority);
-          } else if (result.isDenied) {
-            sendWhatsApp(WHATSAPP_NUMBERS.sekre2, title, desc, deadline, priority);
-          }
-        });
-        return;
-      }
+      // Kirim langsung tanpa opsi
+      sendWhatsApp(phoneNumber, title, desc, deadline, priority);
+    };
+
+    // Fungsi untuk WhatsApp di footer
+    window.shareFooterWhatsApp = function() {
+      let phoneNumber;
       
-      // Jika tugas spesifik untuk sekre tertentu, gunakan nomor sesuai assignee
-      if (assignee === 'sekre1') {
+      if (currentUser === 'sekre1') {
         phoneNumber = WHATSAPP_NUMBERS.sekre1;
-      } else if (assignee === 'sekre2') {
+      } else {
         phoneNumber = WHATSAPP_NUMBERS.sekre2;
       }
       
-      sendWhatsApp(phoneNumber, title, desc, deadline, priority);
+      const message = `Halo, saya adalah ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'} dari MPK. Ada yang bisa dibantu?`;
+      
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
     };
 
     function sendWhatsApp(phoneNumber, title, desc, deadline, priority) {
@@ -3200,8 +3217,7 @@
               <div class="countdown-container normal" id="countdown-container-${doc.id}">
                 <div id="countdown-${doc.id}"></div>
               </div>
-              
-              
+                            
               <div class="flex justify-between items-center mt-4">
                 <div>
                   ${data.completed ? 
@@ -3218,7 +3234,7 @@
                   }
                 </div>
                 <div class="flex gap-2">
-                  <!-- WhatsApp Share Button dengan warna sesuai assignee -->
+                  <!-- WhatsApp Share Button -->
                   <button onclick="shareTaskWhatsApp('${doc.id}', '${data.title.replace(/'/g, "\\'")}', '${data.desc ? data.desc.replace(/'/g, "\\'") : ''}', '${data.deadline}', '${data.priority}', '${data.assignee}')" 
                           class="share-btn ${data.assignee === 'sekre1' ? 'sekre1' : (data.assignee === 'sekre2' ? 'sekre2' : '')}" 
                           title="Bagikan ke WhatsApp">
