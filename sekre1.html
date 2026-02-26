@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Sekre MPK - Web dengan Komentar Notes</title>
+  <title>Sekre MPK - Web dengan Komentar Notes & Gallery Delete</title>
   
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -908,6 +908,74 @@
       border-color: var(--accent-primary);
     }
 
+    /* Delete button for gallery */
+    .gallery-delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border: none;
+    }
+
+    .gallery-item:hover .gallery-delete-btn {
+      opacity: 1;
+    }
+
+    .gallery-delete-btn:hover {
+      transform: scale(1.1);
+      background: #ef4444;
+    }
+
+    /* Password input for delete */
+    .password-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border-glow);
+      border-radius: 8px;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .password-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 15px var(--shadow-color);
+    }
+
+    /* Inline Comments */
+    .inline-comments-container {
+      border-top: 1px solid var(--border-glow);
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+
+    .comments-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 0.75rem;
+    }
+
+    .comments-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 5px;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .timeline::before {
@@ -1282,7 +1350,7 @@
     </div>
   </section>
 
-  <!-- Gallery Section -->
+  <!-- Gallery Section dengan Fitur Delete -->
   <section id="gallery" style="padding: 5rem 0;">
     <div class="container mx-auto px-4">
       <h2 class="text-4xl font-bold text-center mb-12">
@@ -1594,7 +1662,7 @@
     </div>
   </section>
 
-  <!-- Notes Section dengan Fitur Komentar -->
+  <!-- Notes Section dengan Fitur Komentar Inline -->
   <section id="notes" style="padding: 5rem 0; background: var(--bg-secondary);">
     <div class="container mx-auto px-4">
       <div class="flex flex-col sm:flex-row justify-between items-center mb-12">
@@ -1794,7 +1862,7 @@
     </div>
   </div>
 
-  <!-- Notes Modal dengan Fitur Komentar -->
+  <!-- Notes Modal (tetap ada untuk menambah note baru) -->
   <div id="notesModal" class="modal">
     <div class="modal-content max-w-lg">
       <div class="flex justify-between items-center mb-4">
@@ -1839,32 +1907,33 @@
           <input type="hidden" id="noteColor" value="#ff6b6b">
         </div>
         
-        <!-- Hidden field untuk menyimpan ID note yang sedang dilihat -->
-        <input type="hidden" id="currentNoteId">
-        
         <div class="flex gap-3 pt-4">
           <button type="button" onclick="closeNotesModal()" class="flex-1 btn-outline">Cancel</button>
           <button type="submit" class="flex-1 btn-primary">Add Note</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Password Modal untuk Delete Gallery -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Konfirmasi Password</h3>
+        <button onclick="closePasswordModal()" class="text-2xl hover:opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
       
-      <!-- Section Komentar -->
-      <div id="commentsSection" class="comments-section hidden">
-        <h4 class="font-semibold mb-3 flex items-center gap-2">
-          <i class="fas fa-comments" style="color: var(--accent-primary);"></i>
-          Komentar
-        </h4>
+      <div class="space-y-4">
+        <p style="color: var(--text-secondary);">Masukkan password untuk menghapus foto:</p>
+        <input type="password" id="deletePassword" class="password-input" placeholder="Password..." autocomplete="off">
+        <input type="hidden" id="deletePhotoId">
+        <input type="hidden" id="deletePhotoUrl">
         
-        <!-- Daftar Komentar -->
-        <div id="commentsList" class="space-y-3 max-h-60 overflow-y-auto mb-4"></div>
-        
-        <!-- Form Tambah Komentar -->
-        <div class="flex gap-2">
-          <input type="text" id="commentInput" placeholder="Tulis komentar..." 
-                 class="flex-1 form-input text-sm py-2">
-          <button onclick="addComment()" class="btn-primary py-2 px-4 text-sm">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+        <div class="flex gap-3 pt-4">
+          <button onclick="closePasswordModal()" class="flex-1 btn-outline">Batal</button>
+          <button onclick="verifyAndDeletePhoto()" class="flex-1 btn-primary">Hapus</button>
         </div>
       </div>
     </div>
@@ -1907,12 +1976,11 @@
     // ==================== GLOBAL VARIABLES ====================
     let currentUser = localStorage.getItem('currentUser') || 'sekre1';
     let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-    let currentNoteId = null;
-    let commentsListener = null;
     let lastDoc = null;
     let currentCategory = 'all';
     let isLoading = false;
     let currentTaskFilter = 'all';
+    const PASSWORD = "sekre123"; // Password untuk menghapus foto
 
     // ==================== THEME TOGGLE ====================
     const themeToggle = document.getElementById('themeToggle');
@@ -2776,7 +2844,7 @@
       }
     }
 
-    // ==================== NOTES FUNCTIONS dengan KOMENTAR ====================
+    // ==================== NOTES FUNCTIONS dengan KOMENTAR INLINE ====================
     const notesGrid = document.getElementById('notesGrid');
     const addNoteBtn = document.getElementById('addNoteBtn');
     const notesModal = document.getElementById('notesModal');
@@ -2785,10 +2853,6 @@
     const noteCategory = document.getElementById('noteCategory');
     const noteContent = document.getElementById('noteContent');
     const noteColor = document.getElementById('noteColor');
-    const currentNoteIdInput = document.getElementById('currentNoteId');
-    const commentsSection = document.getElementById('commentsSection');
-    const commentsList = document.getElementById('commentsList');
-    const commentInput = document.getElementById('commentInput');
     
     const totalNotesEl = document.getElementById('totalNotes');
     const todayNotesEl = document.getElementById('todayNotes');
@@ -2811,102 +2875,71 @@
     // Open notes modal for add
     if (addNoteBtn) {
       addNoteBtn.addEventListener('click', () => {
-        // Reset form untuk add new
         document.querySelector('#notesModal .modal-content h3').textContent = 'Add New Note';
         notesForm.reset();
-        currentNoteIdInput.value = '';
         document.getElementById('noteTitle').disabled = false;
         document.getElementById('noteCategory').disabled = false;
         document.getElementById('noteContent').disabled = false;
         document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
         noteColor.value = '#ff6b6b';
-        commentsSection.classList.add('hidden');
-        
-        // Bersihkan listener
-        if (commentsListener) {
-          commentsListener();
-          commentsListener = null;
-        }
         
         notesModal.classList.add('show');
         document.body.style.overflow = 'hidden';
       });
     }
 
-    // Buka note untuk melihat komentar
-    window.openNoteWithComments = async function(noteId, title, category, content, color) {
-      currentNoteId = noteId;
-      currentNoteIdInput.value = noteId;
+    // Toggle komentar inline
+    window.toggleComments = async function(noteId, buttonElement) {
+      const noteCard = buttonElement.closest('.notes-card');
+      let commentsContainer = noteCard.querySelector('.inline-comments-container');
       
-      // Tampilkan section komentar
-      commentsSection.classList.remove('hidden');
-      
-      // Update judul modal
-      document.querySelector('#notesModal .modal-content h3').textContent = `Note: ${title}`;
-      
-      // Isi form dengan data note (readonly)
-      document.getElementById('noteTitle').value = title;
-      document.getElementById('noteTitle').disabled = true;
-      document.getElementById('noteCategory').value = category;
-      document.getElementById('noteCategory').disabled = true;
-      document.getElementById('noteContent').value = content;
-      document.getElementById('noteContent').disabled = true;
-      document.getElementById('noteColor').value = color;
-      
-      // Sembunyikan tombol submit
-      document.querySelector('#notesForm button[type="submit"]').style.display = 'none';
-      
-      // Tampilkan modal
-      notesModal.classList.add('show');
-      document.body.style.overflow = 'hidden';
-      
-      // Load komentar
-      loadComments(noteId);
-      
-      // Focus ke input komentar
-      setTimeout(() => {
-        commentInput.focus();
-      }, 500);
-    };
-
-    // Load komentar dari Firestore
-    async function loadComments(noteId) {
-      if (!db || !noteId) return;
-      
-      // Bersihkan listener sebelumnya
-      if (commentsListener) {
-        commentsListener();
+      if (commentsContainer) {
+        if (commentsContainer.style.display === 'none') {
+          commentsContainer.style.display = 'block';
+          buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Sembunyikan Komentar';
+        } else {
+          commentsContainer.style.display = 'none';
+          buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Komentar';
+        }
+        return;
       }
       
-      // Setup real-time listener
-      commentsListener = db.collection('notes').doc(noteId)
-        .collection('comments')
-        .orderBy('timestamp', 'asc')
-        .onSnapshot((snapshot) => {
-          if (snapshot.empty) {
-            commentsList.innerHTML = `
-              <div class="text-center py-4" style="color: var(--text-secondary);">
-                <p class="text-sm">Belum ada komentar</p>
-                <p class="text-xs mt-2">Jadilah yang pertama berkomentar!</p>
-              </div>
-            `;
-            return;
-          }
-          
-          let html = '';
+      commentsContainer = document.createElement('div');
+      commentsContainer.className = 'inline-comments-container';
+      
+      commentsContainer.innerHTML = '<div class="text-center py-2"><div class="loading-spinner" style="width: 20px; height: 20px;"></div></div>';
+      noteCard.appendChild(commentsContainer);
+      
+      await loadInlineComments(noteId, commentsContainer);
+      
+      buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Sembunyikan Komentar';
+    };
+
+    // Load komentar inline
+    async function loadInlineComments(noteId, container) {
+      if (!db) return;
+      
+      try {
+        const snapshot = await db.collection('notes').doc(noteId)
+          .collection('comments')
+          .orderBy('timestamp', 'asc')
+          .get();
+        
+        let html = '<div class="comments-list space-y-2 max-h-48 overflow-y-auto mb-3">';
+        
+        if (snapshot.empty) {
+          html += '<p class="text-center text-sm py-2" style="color: var(--text-secondary);">Belum ada komentar</p>';
+        } else {
           snapshot.forEach(doc => {
             const comment = doc.data();
             const date = new Date(comment.timestamp);
-            const timeStr = date.toLocaleTimeString('id-ID', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            });
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
             const isCurrentUser = comment.user === currentUser;
             
             html += `
               <div class="flex ${isCurrentUser ? 'justify-end' : 'justify-start'}">
-                <div class="max-w-[80%] p-3 rounded-lg" 
+                <div class="max-w-[90%] p-2 rounded-lg text-sm" 
                      style="background: ${isCurrentUser ? 'var(--accent-primary)' : 'var(--bg-card)'}; 
                             color: ${isCurrentUser ? 'white' : 'var(--text-primary)'};
                             border: 1px solid var(--border-glow);">
@@ -2916,32 +2949,58 @@
                     </span>
                     <span class="text-xs opacity-70">${timeStr}</span>
                   </div>
-                  <p class="text-sm">${comment.text}</p>
+                  <p class="text-xs">${comment.text}</p>
                 </div>
               </div>
             `;
           });
-          
-          commentsList.innerHTML = html;
-          
-          // Scroll ke bawah
+        }
+        
+        html += '</div>';
+        
+        html += `
+          <div class="flex gap-2">
+            <input type="text" id="inline-comment-${noteId}" placeholder="Tulis komentar..." 
+                   class="flex-1 form-input text-xs py-1.5"
+                   data-note-id="${noteId}">
+            <button onclick="addInlineComment('${noteId}')" class="btn-primary py-1.5 px-3 text-xs">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        const input = document.getElementById(`inline-comment-${noteId}`);
+        if (input) {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              addInlineComment(noteId);
+            }
+          });
+        }
+        
+        const commentsList = container.querySelector('.comments-list');
+        if (commentsList) {
           commentsList.scrollTop = commentsList.scrollHeight;
-        }, (error) => {
-          console.error('Error loading comments:', error);
-        });
+        }
+        
+      } catch (error) {
+        console.error('Error loading inline comments:', error);
+        container.innerHTML = '<p class="text-center text-sm text-red-400">Error loading comments</p>';
+      }
     }
 
-    // Tambah komentar baru
-    window.addComment = async function() {
-      const text = commentInput.value.trim();
+    // Tambah komentar inline
+    window.addInlineComment = async function(noteId) {
+      const input = document.getElementById(`inline-comment-${noteId}`);
+      const text = input.value.trim();
       
-      if (!text || !currentNoteId || !db) {
-        alert('Tulis komentar terlebih dahulu!');
-        return;
-      }
+      if (!text || !db) return;
       
       try {
-        await db.collection('notes').doc(currentNoteId)
+        await db.collection('notes').doc(noteId)
           .collection('comments')
           .add({
             text: text,
@@ -2950,57 +3009,30 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         
-        // Kosongkan input
-        commentInput.value = '';
+        input.value = '';
         
-        // Ambil data note untuk notifikasi
-        const noteDoc = await db.collection('notes').doc(currentNoteId).get();
+        const noteCard = input.closest('.notes-card');
+        const commentsContainer = noteCard.querySelector('.inline-comments-container');
+        if (commentsContainer) {
+          await loadInlineComments(noteId, commentsContainer);
+        }
+        
+        const noteDoc = await db.collection('notes').doc(noteId).get();
         const noteData = noteDoc.data();
         
-        // Notifikasi untuk user lain
         addNotification(
           `💬 Komentar baru pada note "${noteData.title}" dari ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`,
           'info'
         );
         
       } catch (error) {
-        console.error('Error adding comment:', error);
-        alert('Gagal menambahkan komentar: ' + error.message);
+        console.error('Error adding inline comment:', error);
+        alert('Gagal menambahkan komentar');
       }
     };
 
-    // Allow Enter key to send comment
-    if (commentInput) {
-      commentInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          addComment();
-        }
-      });
-    }
-
-    // Override closeNotesModal
+    // Close notes modal
     window.closeNotesModal = function() {
-      // Reset form
-      document.getElementById('noteTitle').disabled = false;
-      document.getElementById('noteCategory').disabled = false;
-      document.getElementById('noteContent').disabled = false;
-      document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
-      
-      // Sembunyikan section komentar
-      commentsSection.classList.add('hidden');
-      
-      // Bersihkan listener
-      if (commentsListener) {
-        commentsListener();
-        commentsListener = null;
-      }
-      
-      // Reset current note ID
-      currentNoteId = null;
-      currentNoteIdInput.value = '';
-      
-      // Tutup modal
       notesModal.classList.remove('show');
       document.body.style.overflow = 'auto';
     };
@@ -3037,7 +3069,6 @@
           closeNotesModal();
           loadNotes();
           
-          // Notifikasi untuk user lain
           addNotification(`📝 Note baru: "${title}" ditambahkan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'info');
           
         } catch (error) {
@@ -3056,7 +3087,6 @@
       
       if (confirm('Are you sure you want to delete this note?')) {
         try {
-          // Hapus juga semua komentar di dalam note
           const commentsSnapshot = await db.collection('notes').doc(id).collection('comments').get();
           const batch = db.batch();
           
@@ -3124,7 +3154,7 @@
               <div class="flex justify-between items-start mb-3">
                 <span class="text-xs px-2 py-1 rounded-full" style="background: ${data.color}20; color: ${data.color};">${data.category}</span>
                 <div class="flex gap-2">
-                  <button onclick="openNoteWithComments('${doc.id}', '${data.title.replace(/'/g, "\\'")}', '${data.category}', '${data.content.replace(/'/g, "\\'")}', '${data.color}')" 
+                  <button onclick="toggleComments('${doc.id}', this)" 
                           class="text-sm hover:opacity-70 px-2 py-1 rounded" 
                           style="color: var(--accent-primary); background: var(--accent-primary)20;" 
                           title="Lihat & Komentar">
@@ -3176,7 +3206,7 @@
       if (monthNotesEl) monthNotesEl.textContent = month;
     }
 
-    // ==================== GALLERY FUNCTIONS ====================
+    // ==================== GALLERY FUNCTIONS dengan DELETE ====================
     const uploadForm = document.getElementById('uploadForm');
     const imageFile = document.getElementById('imageFile');
     const imageCaption = document.getElementById('imageCaption');
@@ -3231,6 +3261,78 @@
           document.body.style.overflow = 'auto';
         }
       });
+    };
+
+    // Password modal functions
+    window.openPasswordModal = function(photoId, photoUrl) {
+      document.getElementById('deletePhotoId').value = photoId;
+      document.getElementById('deletePhotoUrl').value = photoUrl;
+      document.getElementById('deletePassword').value = '';
+      document.getElementById('passwordModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      
+      setTimeout(() => {
+        document.getElementById('deletePassword').focus();
+      }, 500);
+    };
+
+    window.closePasswordModal = function() {
+      document.getElementById('passwordModal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+      document.getElementById('deletePassword').value = '';
+    };
+
+    window.verifyAndDeletePhoto = async function() {
+      const password = document.getElementById('deletePassword').value;
+      const photoId = document.getElementById('deletePhotoId').value;
+      const photoUrl = document.getElementById('deletePhotoUrl').value;
+      
+      if (!password) {
+        alert('Masukkan password terlebih dahulu!');
+        return;
+      }
+      
+      if (password !== PASSWORD) {
+        alert('Password salah!');
+        document.getElementById('deletePassword').value = '';
+        document.getElementById('deletePassword').focus();
+        return;
+      }
+      
+      try {
+        if (!db || !storage) throw new Error('Firebase not initialized');
+        
+        await db.collection('gallery').doc(photoId).delete();
+        
+        try {
+          const photoRef = storage.refFromURL(photoUrl);
+          await photoRef.delete();
+        } catch (storageError) {
+          console.log('Storage delete error:', storageError);
+        }
+        
+        const photoElement = document.querySelector(`[data-firebase-id="${photoId}"]`);
+        if (photoElement) {
+          photoElement.remove();
+        }
+        
+        closePasswordModal();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Foto berhasil dihapus',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        addNotification('📸 Sebuah foto telah dihapus dari gallery', 'info');
+        
+      } catch (error) {
+        console.error('Error deleting photo:', error);
+        alert('Gagal menghapus foto: ' + error.message);
+        closePasswordModal();
+      }
     };
 
     // Upload photo
@@ -3378,6 +3480,16 @@
               </div>
             `;
             
+            // Add delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'gallery-delete-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.setAttribute('onclick', `event.stopPropagation(); openPasswordModal('${doc.id}', '${data.url}')`);
+            deleteBtn.setAttribute('title', 'Hapus foto (password required)');
+            
+            div.appendChild(deleteBtn);
+            div.style.position = 'relative';
+            
             galleryGrid.appendChild(div);
           });
 
@@ -3437,10 +3549,8 @@
     document.addEventListener('DOMContentLoaded', function() {
       console.log('📄 DOM loaded');
       
-      // Initialize current user
       switchUser(currentUser);
       
-      // Render notifications
       renderNotifications();
       updateNotificationBadge();
       
@@ -3462,6 +3572,17 @@
           modal.classList.remove('show');
           document.body.style.overflow = 'auto';
         });
+        closePasswordModal();
+      }
+    });
+
+    // Close password modal when clicking outside
+    document.addEventListener('click', function(e) {
+      const passwordModal = document.getElementById('passwordModal');
+      if (passwordModal && passwordModal.classList.contains('show')) {
+        if (e.target === passwordModal) {
+          closePasswordModal();
+        }
       }
     });
   </script>
