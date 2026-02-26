@@ -1,0 +1,3469 @@
+<!DOCTYPE html>
+<html lang="id" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Sekre MPK - Web dengan Komentar Notes</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Flatpickr for Date Picker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <!-- SweetAlert2 for Notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      padding-top: 70px; /* Memberi ruang untuk navbar fixed */
+    }
+
+    :root {
+      --bg-primary: #0f0f23;
+      --bg-secondary: #1a1a2e;
+      --bg-card: #16213e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --border-glow: rgba(0, 191, 255, 0.2);
+      --accent-primary: #00bfff;
+      --accent-secondary: #8b5cf6;
+      --accent-tertiary: #ec4899;
+      --shadow-color: rgba(0, 191, 255, 0.3);
+      --status-selesai: #10b981;
+      --status-progress: #f59e0b;
+      --status-belum: #ef4444;
+      --priority-high: #ef4444;
+      --priority-medium: #f59e0b;
+      --priority-low: #10b981;
+    }
+
+    .light {
+      --bg-primary: #f1f5f9;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border-glow: rgba(59, 130, 246, 0.2);
+      --accent-primary: #3b82f6;
+      --accent-secondary: #8b5cf6;
+      --accent-tertiary: #ec4899;
+      --shadow-color: rgba(59, 130, 246, 0.3);
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 5px;
+    }
+
+    /* Glassmorphism untuk navbar */
+    .glass-nav {
+      background: rgba(26, 15, 26, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(236, 72, 153, 0.2);
+    }
+
+    .light .glass-nav {
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    /* Gradient Background */
+    .gradient-bg {
+      background: linear-gradient(-45deg, #00bfff, #8b5cf6, #ec4899, #00ffff);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-slide-up { animation: slideUp 0.6s ease-out; }
+    .animate-slide-in { animation: slideIn 0.6s ease-out; }
+    .animate-scale-in { animation: scaleIn 0.5s ease-out; }
+
+    /* Marquee Animation */
+    .marquee-container {
+      overflow: hidden;
+      width: 100%;
+      padding: 2rem 0;
+    }
+
+    .marquee {
+      display: flex;
+      gap: 1.5rem;
+      animation: marquee 30s linear infinite;
+      width: fit-content;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Program Kerja Cards */
+    .progja-card {
+      flex-shrink: 0;
+      min-width: 140px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .progja-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .progja-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    /* Project Cards */
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px var(--shadow-color);
+    }
+
+    /* Notes Cards */
+    .notes-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    /* Tasks Cards */
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .task-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .task-card.completed {
+      opacity: 0.8;
+      border-left: 4px solid var(--status-selesai);
+    }
+
+    .task-card.pending {
+      border-left: 4px solid var(--status-progress);
+    }
+
+    .task-card.overdue {
+      border-left: 4px solid var(--status-belum);
+    }
+
+    .task-priority {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 40px 40px 0;
+    }
+
+    .task-priority.high {
+      border-color: transparent var(--priority-high) transparent transparent;
+    }
+
+    .task-priority.medium {
+      border-color: transparent var(--priority-medium) transparent transparent;
+    }
+
+    .task-priority.low {
+      border-color: transparent var(--priority-low) transparent transparent;
+    }
+
+    .task-assignee {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .assignee-sekre1 {
+      background: rgba(0, 191, 255, 0.2);
+      color: var(--accent-primary);
+    }
+
+    .assignee-sekre2 {
+      background: rgba(236, 72, 153, 0.2);
+      color: var(--accent-tertiary);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .timeline-item {
+      position: relative;
+      margin: 2rem 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      box-shadow: 0 0 20px currentColor;
+      z-index: 1;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-dot.selesai {
+      background: var(--status-selesai);
+      box-shadow: 0 0 20px var(--status-selesai);
+    }
+
+    .timeline-dot.progress {
+      background: var(--status-progress);
+      box-shadow: 0 0 20px var(--status-progress);
+    }
+
+    .timeline-dot.belum {
+      background: var(--status-belum);
+      box-shadow: 0 0 20px var(--status-belum);
+    }
+
+    .timeline-content {
+      width: 45%;
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-content.selesai {
+      border-left: 4px solid var(--status-selesai);
+    }
+
+    .timeline-content.progress {
+      border-left: 4px solid var(--status-progress);
+    }
+
+    .timeline-content.belum {
+      border-left: 4px solid var(--status-belum);
+    }
+
+    .timeline-content:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content {
+      margin-left: auto;
+    }
+
+    .timeline-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .timeline-content:hover .timeline-actions {
+      opacity: 1;
+    }
+
+    .timeline-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-btn.edit {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .timeline-btn.delete {
+      background: #ef4444;
+      color: white;
+    }
+
+    .timeline-btn.complete {
+      background: var(--status-selesai);
+      color: white;
+    }
+
+    .timeline-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-badge.selesai {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--status-selesai);
+    }
+
+    .status-badge.progress {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--status-progress);
+    }
+
+    .status-badge.belum {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--status-belum);
+    }
+
+    /* Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--bg-card);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid var(--border-glow);
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+
+    .gallery-item .overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      padding: 1rem;
+      color: white;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover .overlay {
+      transform: translateY(0);
+    }
+
+    /* Default photo highlight */
+    .default-photo {
+      border: 2px solid var(--accent-primary);
+      position: relative;
+    }
+
+    .default-photo::after {
+      content: '★';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: gold;
+      font-size: 20px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      z-index: 2;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: scaleIn 0.3s ease-out;
+    }
+
+    /* Form Inputs */
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border-glow);
+      border-radius: 8px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 15px var(--shadow-color);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .form-input:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Flatpickr Customization */
+    .flatpickr-calendar {
+      background: var(--bg-card) !important;
+      border: 1px solid var(--border-glow) !important;
+      box-shadow: 0 10px 30px var(--shadow-color) !important;
+    }
+
+    .flatpickr-day {
+      color: var(--text-primary) !important;
+    }
+
+    .flatpickr-day.selected {
+      background: var(--accent-primary) !important;
+      border-color: var(--accent-primary) !important;
+    }
+
+    .flatpickr-day:hover {
+      background: var(--accent-secondary) !important;
+    }
+
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-weekdays,
+    .flatpickr-weekday {
+      background: var(--bg-card) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+      background: var(--bg-card) !important;
+      color: var(--text-primary) !important;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--accent-primary);
+      color: var(--accent-primary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .btn-outline:hover {
+      background: var(--accent-primary);
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-glow);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border-glow);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+      transition: width 0.3s ease;
+    }
+
+    /* Navigation Links */
+    .nav-link {
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
+      position: relative;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--accent-primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px var(--shadow-color);
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-toggle i {
+      color: white;
+      font-size: 24px;
+    }
+
+    /* Status Options */
+    .status-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .status-option:hover {
+      background: var(--border-glow);
+    }
+
+    .status-option.selected {
+      border: 2px solid var(--accent-primary);
+    }
+
+    .status-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    .status-color.selesai {
+      background: var(--status-selesai);
+    }
+
+    .status-color.progress {
+      background: var(--status-progress);
+    }
+
+    .status-color.belum {
+      background: var(--status-belum);
+    }
+
+    /* Notification badge */
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--status-belum);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* User profile in navbar */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: 1rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .user-avatar.sekre1 {
+      background: linear-gradient(135deg, var(--accent-primary), #0066cc);
+    }
+
+    .user-avatar.sekre2 {
+      background: linear-gradient(135deg, var(--accent-tertiary), #b91c6b);
+    }
+
+    .user-switch {
+      position: relative;
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      padding: 0.5rem;
+      min-width: 150px;
+      display: none;
+      z-index: 100;
+    }
+
+    .user-dropdown.show {
+      display: block;
+    }
+
+    .user-dropdown-item {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .user-dropdown-item:hover {
+      background: var(--border-glow);
+    }
+
+    .user-dropdown-item.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    /* Notification Dropdown */
+    #notificationDropdown {
+      width: 300px;
+      right: -50px;
+    }
+
+    #notificationDropdown .user-dropdown-item {
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    /* Comments Section */
+    .comments-section {
+      border-top: 1px solid var(--border-glow);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    .comment-bubble {
+      max-width: 80%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-bubble.own {
+      background: var(--accent-primary);
+      color: white;
+      margin-left: auto;
+    }
+
+    .comment-bubble.other {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+    }
+
+    /* Task Filter Buttons */
+    .task-filter-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--text-secondary);
+    }
+
+    .task-filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .task-filter-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .timeline::before {
+        left: 20px;
+      }
+
+      .timeline-dot {
+        left: 20px;
+      }
+
+      .timeline-content {
+        width: calc(100% - 50px);
+        margin-left: 50px !important;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+
+      .tasks-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      #notificationDropdown {
+        width: 280px;
+        right: -20px;
+      }
+      
+      .task-filters {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .progja-card {
+        min-width: 120px;
+        padding: 1rem;
+      }
+
+      .modal-content {
+        padding: 1rem;
+      }
+    }
+
+    /* Touch-friendly improvements */
+    @media (hover: none) and (pointer: coarse) {
+      .progja-card:active,
+      .project-card:active,
+      .notes-card:active,
+      .task-card:active,
+      .timeline-content:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary:active,
+      .btn-outline:active {
+        transform: scale(0.98);
+      }
+    }
+
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Color options for notes */
+    .color-option {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Theme Toggle Button -->
+  <button id="themeToggle" class="theme-toggle">
+    <i class="fas fa-moon" id="themeIcon"></i>
+  </button>
+
+  <!-- Navigation - FIXED -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex justify-between items-center">
+        <!-- Logo -->
+        <a href="#home" class="text-2xl font-bold">
+          <span class="gradient-bg bg-clip-text text-transparent">Sekre</span>
+          <span style="color: var(--accent-primary);">MPK</span>
+        </a>
+        
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="#home" class="nav-link py-2">Home</a>
+          <a href="#about" class="nav-link py-2">About</a>
+          <a href="#projects" class="nav-link py-2">Projects</a>
+          <a href="#tasks" class="nav-link py-2">Tasks</a>
+          <a href="#gallery" class="nav-link py-2">Gallery</a>
+          <a href="#timeline" class="nav-link py-2">Timeline</a>
+          <a href="#progja" class="nav-link py-2">Progja</a>
+          <a href="#notes" class="nav-link py-2">Notes</a>
+        </div>
+        
+        <!-- User Profile & Notifications -->
+        <div class="flex items-center gap-3">
+          <!-- Notification Bell -->
+          <div class="relative" id="notificationBell">
+            <button id="notificationBtn" class="text-xl relative p-2">
+              <i class="fas fa-bell"></i>
+              <span id="notificationCount" class="notification-badge hidden">0</span>
+            </button>
+            <div id="notificationDropdown" class="user-dropdown">
+              <div class="p-3 border-b border-gray-700 font-semibold">Notifikasi</div>
+              <div id="notificationList" class="max-h-64 overflow-y-auto">
+                <div class="p-3 text-center text-gray-400">Tidak ada notifikasi</div>
+              </div>
+              <div class="p-2 border-t border-gray-700">
+                <button id="clearNotifications" class="text-xs text-pink-500 hover:underline w-full text-center">
+                  Tandai semua dibaca
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Switch -->
+          <div class="user-switch">
+            <div id="currentUserAvatar" class="user-avatar sekre1" onclick="toggleUserDropdown()">
+              S1
+            </div>
+            <div id="userDropdown" class="user-dropdown">
+              <div class="user-dropdown-item active" data-user="sekre1" onclick="switchUser('sekre1')">
+                <i class="fas fa-user mr-2"></i>Sekre 1
+              </div>
+              <div class="user-dropdown-item" data-user="sekre2" onclick="switchUser('sekre2')">
+                <i class="fas fa-user mr-2"></i>Sekre 2
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mobile Menu Button -->
+          <button id="menuBtn" class="md:hidden text-2xl ml-2" style="color: var(--text-primary);">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Mobile Menu -->
+      <div id="mobileMenu" class="hidden md:hidden mt-4 space-y-2 pb-2">
+        <a href="#home" class="block py-2 nav-link">Home</a>
+        <a href="#about" class="block py-2 nav-link">About</a>
+        <a href="#projects" class="block py-2 nav-link">Projects</a>
+        <a href="#tasks" class="block py-2 nav-link">Tasks</a>
+        <a href="#gallery" class="block py-2 nav-link">Gallery</a>
+        <a href="#timeline" class="block py-2 nav-link">Timeline</a>
+        <a href="#progja" class="block py-2 nav-link">Progja</a>
+        <a href="#notes" class="block py-2 nav-link">Notes</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div class="absolute inset-0 gradient-bg opacity-20"></div>
+    <div class="absolute inset-0">
+      <div class="absolute top-1/4 left-1/4 w-32 h-32" style="background: var(--accent-primary); border-radius: 50%; filter: blur(64px); opacity: 0.3; animation: float 6s ease-in-out infinite;"></div>
+      <div class="absolute bottom-1/3 right-1/4 w-40 h-40" style="background: var(--accent-secondary); border-radius: 50%; filter: blur(64px); opacity: 0.2; animation: float 6s ease-in-out infinite; animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 left-1/2 w-24 h-24" style="background: var(--accent-tertiary); border-radius: 50%; filter: blur(64px); opacity: 0.25; animation: float 6s ease-in-out infinite; animation-delay: 2s;"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 text-center relative z-10">
+      <p class="text-xl mb-4 animate-slide-up" style="color: var(--text-secondary);">Web</p>
+      <h1 class="text-5xl md:text-7xl font-bold mb-4 animate-scale-in">
+        <span class="gradient-bg bg-clip-text text-transparent">Sekre MPK</span>
+      </h1>
+      <h2 class="text-2xl md:text-3xl mb-4 animate-slide-up" style="color: var(--accent-primary); animation-delay: 0.1s">
+        2025/2026
+      </h2>
+      
+      <!-- Welcome message with current user -->
+      <div class="mb-8 animate-slide-up" style="animation-delay: 0.15s">
+        <span class="text-lg" style="color: var(--text-secondary);">Halo, </span>
+        <span id="welcomeUser" class="text-xl font-bold" style="color: var(--accent-primary);">Sekre 1</span>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row justify-center gap-4 animate-slide-up" style="animation-delay: 0.2s">
+        <a href="#tasks" class="btn-primary">
+          <i class="fas fa-tasks mr-2"></i>Lihat Tugas
+        </a>
+        <a href="#timeline" class="btn-outline">
+          <i class="fas fa-clock mr-2"></i>Timeline
+        </a>
+      </div>
+    </div>
+    
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <a href="#about" style="color: var(--text-secondary);">
+        <i class="fas fa-chevron-down text-2xl"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" style="padding: 5rem 0; background: var(--bg-secondary);">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center mb-12">
+        <span class="gradient-bg bg-clip-text text-transparent">About Us</span>
+      </h2>
+      
+      <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="md:w-1/3">
+          <div class="relative animate-float">
+            <div class="w-64 h-64 mx-auto rounded-full overflow-hidden border-4" style="border-color: var(--accent-primary);">
+              <img src="img/jelek.jpeg" alt="Profile" class="w-full h-full object-cover">
+            </div>
+            <div class="absolute inset-0 rounded-full border-4 animate-pulse" style="border-color: var(--accent-primary); opacity: 0.5;"></div>
+          </div>
+        </div>
+        
+        <div class="md:w-2/3">
+          <h3 class="text-2xl font-bold mb-4">
+            Secretary Contract
+          </h3>
+          <p class="mb-4 leading-relaxed" style="color: var(--text-secondary);">
+            1. Kalau lagi ada tugas sekre gaboleh tidur duluan<br>2. Sekre 2 harus membantu sekre 1<br>3. Sekre 2 harus nurut sama sekre 1<br>4. Saling mengingatkan tugas masing-masing
+          </p>
+          <p class="mb-6 leading-relaxed" style="color: var(--text-secondary);">
+            Kontrak tersebut diambil dari hasil sidang AD/ART MPK Periode Tahun Ajaran 2025/2026
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+              <i class="fas fa-envelope" style="color: var(--accent-primary);"></i>
+              <span>salsasnyaalay@gmail.com</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+              <i class="fas fa-graduation-cap" style="color: var(--accent-primary);"></i>
+              <span>SMA Negeri 2 Purwokerto</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="https://docs.google.com/document/d/1cdPFZzhuVAMafYMlOkokJqu7PMewaJ1H/edit?usp=sharing&ouid=116449098186017865189&rtpof=true&sd=true" class="btn-primary">
+              <i class="fas fa-download mr-2"></i>Download AD/ART
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section -->
+  <section id="projects" style="padding: 5rem 0;">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center mb-12">
+        <span class="gradient-bg bg-clip-text text-transparent">Our Projects</span>
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Project 1 -->
+        <div class="project-card">
+          <div class="relative aspect-video overflow-hidden">
+            <img src="img/web-MPK.png" alt="Project" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+            <div class="absolute top-2 right-2 px-2 py-1 text-white text-xs rounded-full" style="background: var(--accent-primary);">New</div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">Web MPK</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">The official website of the Musyawarah Perwakilan Kelas (MPK) as a center for information and aspirations</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-primary); opacity: 0.2; color: var(--accent-primary);">HTML</span>
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-secondary); opacity: 0.2; color: var(--accent-secondary);">API</span>
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-tertiary); opacity: 0.2; color: var(--accent-tertiary);">Java Script</span>
+            </div>
+            <div class="flex gap-3">
+              <a href="https://smadoeapwt.github.io/MPK-Smada/Beranda.html" class="flex-1 btn-primary text-sm py-2">View Project</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Project 2 -->
+        <div class="project-card">
+          <div class="relative aspect-video overflow-hidden">
+            <img src="https://via.placeholder.com/400x200" alt="Project" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">Template GBHK 2026</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Ready-to-use letter and proposal templates according to GBHK standards</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-primary); opacity: 0.2; color: var(--accent-primary);">Word</span>
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-secondary); opacity: 0.2; color: var(--accent-secondary);">Excel</span>
+            </div>
+            <div class="flex gap-3">
+              <a href="https://drive.google.com/drive/folders/1MLUxhUx8bvGVraqqvhE7-4I4q7aEvq2S?usp=drive_link" class="flex-1 btn-primary text-sm py-2">View Project</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Project 3 -->
+        <div class="project-card">
+          <div class="relative aspect-video overflow-hidden">
+            <img src="https://via.placeholder.com/400x200" alt="Project" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-2">Documents MPK</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Archives and official documents of MPK letters and proposals for the 2025/2026 period.</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-primary); opacity: 0.2; color: var(--accent-primary);">Word</span>
+              <span class="px-2 py-1 text-xs rounded-full" style="background: var(--accent-secondary); opacity: 0.2; color: var(--accent-secondary);">Excel</span>
+            </div>
+            <div class="flex gap-3">
+              <a href="https://drive.google.com/drive/folders/1n656fdWFHPyMmZyDx3vNjRMKRSaaA6_5?usp=sharing" class="flex-1 btn-primary text-sm py-2">View Project</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Daily Tasks Section dengan Filter -->
+  <section id="tasks" style="padding: 5rem 0; background: var(--bg-secondary);">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+        <h2 class="text-4xl font-bold mb-4 sm:mb-0">
+          <span class="gradient-bg bg-clip-text text-transparent">📋 Daily Tasks</span>
+        </h2>
+        <button id="addTaskBtn" class="btn-primary">
+          <i class="fas fa-plus mr-2"></i>Tambah Tugas
+        </button>
+      </div>
+      
+      <!-- Task Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-primary);" id="totalTasks">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Total Tugas</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-secondary);" id="pendingTasks">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Pending</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-tertiary);" id="completedTasks">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Selesai</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--status-belum);" id="overdueTasks">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Terlewat</div>
+        </div>
+      </div>
+      
+      <!-- Task Filters -->
+      <div class="flex gap-2 mb-6 task-filters">
+        <button id="filterAll" class="task-filter-btn active" onclick="filterTasks('all')">
+          <i class="fas fa-list mr-2"></i>Semua
+        </button>
+        <button id="filterPending" class="task-filter-btn" onclick="filterTasks('pending')">
+          <i class="fas fa-clock mr-2" style="color: var(--status-progress);"></i>Pending
+        </button>
+        <button id="filterCompleted" class="task-filter-btn" onclick="filterTasks('completed')">
+          <i class="fas fa-check-circle mr-2" style="color: var(--status-selesai);"></i>Selesai
+        </button>
+        <button id="filterOverdue" class="task-filter-btn" onclick="filterTasks('overdue')">
+          <i class="fas fa-exclamation-triangle mr-2" style="color: var(--status-belum);"></i>Terlewat
+        </button>
+      </div>
+      
+      <!-- Tasks Grid -->
+      <div id="tasksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Tasks akan di-load dari Firebase -->
+        <div class="col-span-full text-center py-12">
+          <div class="loading-spinner mx-auto mb-4"></div>
+          <p style="color: var(--text-secondary);">Loading tasks...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section id="gallery" style="padding: 5rem 0;">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center mb-12">
+        <span class="gradient-bg bg-clip-text text-transparent">Photo Gallery</span>
+      </h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Upload Form -->
+        <div class="lg:col-span-1">
+          <div class="p-6 rounded-xl border" style="background: var(--bg-card); border-color: var(--border-glow);">
+            <h3 class="text-xl font-bold mb-4 gradient-bg bg-clip-text text-transparent">
+              Upload Photo
+            </h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Max 1MB per photo (JPG, PNG, GIF)</p>
+            
+            <form id="uploadForm" class="space-y-4">
+              <div>
+                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Select Image</label>
+                <input type="file" id="imageFile" accept="image/*" required
+                       class="w-full px-3 py-2 rounded-lg border" 
+                       style="background: var(--bg-primary); border-color: var(--border-glow); color: var(--text-primary);">
+              </div>
+              
+              <div>
+                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Caption</label>
+                <input type="text" id="imageCaption" placeholder="Write a caption..." required
+                       class="w-full px-3 py-2 rounded-lg border" 
+                       style="background: var(--bg-primary); border-color: var(--border-glow); color: var(--text-primary);">
+              </div>
+              
+              <div>
+                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Category</label>
+                <select id="imageCategory" required
+                        class="w-full px-3 py-2 rounded-lg border" 
+                        style="background: var(--bg-primary); border-color: var(--border-glow); color: var(--text-primary);">
+                  <option value="personal">Personal</option>
+                  <option value="projects">Projects</option>
+                  <option value="events">Events</option>
+                  <option value="certificates">Certificates</option>
+                </select>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div id="progressContainer" class="hidden">
+                <div class="flex justify-between text-sm mb-1" style="color: var(--text-secondary);">
+                  <span>Uploading...</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <button type="submit" id="uploadBtn" class="w-full btn-primary py-3">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>Upload Photo
+              </button>
+            </form>
+            
+            <div id="uploadMessage" class="mt-4 text-sm hidden"></div>
+          </div>
+        </div>
+        
+        <!-- Gallery Display -->
+        <div class="lg:col-span-2">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold gradient-bg bg-clip-text text-transparent">
+              Photos
+            </h3>
+            <div class="flex gap-2">
+              <select id="categoryFilter" 
+                      class="px-3 py-1 rounded-lg border text-sm" 
+                      style="background: var(--bg-card); border-color: var(--border-glow);">
+                <option value="all">All</option>
+                <option value="personal">Personal</option>
+                <option value="projects">Projects</option>
+                <option value="events">Events</option>
+                <option value="certificates">Certificates</option>
+              </select>
+              <button id="refreshGallery"
+                      class="px-3 py-1 rounded-lg border transition" 
+                      style="background: var(--bg-card); border-color: var(--border-glow);">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Gallery Grid dengan Foto Default -->
+          <div id="galleryGrid" class="gallery-grid">
+            <!-- Default photos dengan preview function -->
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery1.jpeg", "Foto 1", "personal", 1740238800000)'>
+              <img src="img/gallery1.jpeg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 1</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 22/2/2025</p>
+              </div>
+            </div>
+
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery2.jpeg", "Foto 2", "personal", 1740238800001)'>
+              <img src="img/gallery2.jpeg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 2</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 22/2/2025</p>
+              </div>
+            </div>
+
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery3.jpeg", "Foto 3", "personal", 1740238800002)'>
+              <img src="img/gallery3.jpeg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 3</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 22/2/2025</p>
+              </div>
+            </div>
+
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery4.jpeg", "Foto 4", "personal", 1740238800003)'>
+              <img src="img/gallery4.jpeg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 4</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 22/2/2025</p>
+              </div>
+            </div>
+            
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery5.jpg", "Foto 5", "personal", 1740238800004)'>
+              <img src="img/gallery5.jpg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 5</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 28/12/2025</p>
+              </div>
+            </div>
+
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery6.jpg", "Foto 6", "personal", 1740238800005)'>
+              <img src="img/gallery6.jpg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 6</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 28/12/2025</p>
+              </div>
+            </div>
+
+            <div class="gallery-item default-photo" data-category="personal" onclick='openGalleryModal("img/gallery7.jpeg", "Foto 7", "personal", 1740238800006)'>
+              <img src="img/gallery7.jpeg" alt="sekre" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">Foto 7</p>
+                <p class="text-xs text-gray-300 mt-1">personal • 31/1/2026</p>
+              </div>
+            </div>
+
+            <!-- Container untuk foto dari Firebase -->
+            <div class="firebase-photos-container" style="display: contents;"></div>
+            
+            <!-- Loading indicator -->
+            <div class="loading-indicator" id="galleryLoading" style="display: none;">
+              <div class="loading-spinner"></div>
+              <p class="mt-4" style="color: var(--text-secondary);">Loading gallery...</p>
+            </div>
+          </div>
+          
+          <!-- Load More -->
+          <div class="text-center mt-6">
+            <button id="loadMoreBtn" class="hidden px-6 py-2 border rounded-full transition" 
+                    style="border-color: var(--accent-primary); color: var(--accent-primary);">
+              Load More
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE SECTION -->
+  <section id="timeline" style="padding: 5rem 0; background: var(--bg-secondary);">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-12">
+        <h2 class="text-4xl font-bold mb-4 sm:mb-0">
+          <span class="gradient-bg bg-clip-text text-transparent">Timeline</span>
+        </h2>
+        <button id="addTimelineBtn" class="btn-primary">
+          <i class="fas fa-plus mr-2"></i>Add Timeline
+        </button>
+      </div>
+      
+      <!-- Timeline Container -->
+      <div id="timelineContainer" class="timeline">
+        <div class="text-center py-12">
+          <div class="loading-spinner mx-auto mb-4"></div>
+          <p style="color: var(--text-secondary);">Loading timeline...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Kerja Section -->
+  <section id="progja" style="padding: 5rem 0;">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center mb-12">
+        <span class="gradient-bg bg-clip-text text-transparent">Program Kerja</span>
+      </h2>
+      
+      <div class="marquee-container">
+        <div class="marquee">
+          <!-- PILKAOS -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-vote-yea"></i>
+            </div>
+            <div class="font-semibold">PILKAOS</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Pemilihan Ketua OSIS</div>
+          </div>
+          
+          <!-- FORKSA -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <div class="font-semibold">FORKSA</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Forum Komunikasi Sekolah</div>
+          </div>
+          
+          <!-- FKB -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="font-semibold">FKB</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Forum Komunikasi Berkelanjutan</div>
+          </div>
+          
+          <!-- MISERA -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="font-semibold">MISERA</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Mid Semester Aspiration</div>
+          </div>
+          
+          <!-- HAKRAB -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-hand-holding-heart"></i>
+            </div>
+            <div class="font-semibold">HAKRAB</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Hari Keakraban</div>
+          </div>
+          
+          <!-- Studi Banding -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="font-semibold">Studi Banding</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Studi Banding</div>
+          </div>
+          
+          <!-- GBHK -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-compass"></i>
+            </div>
+            <div class="font-semibold">GBHK</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Garis Besar Haluan Kerja</div>
+          </div>
+          
+          <!-- Duplicate for seamless loop -->
+          <div class="progja-card">
+            <div class="progja-icon">
+              <i class="fas fa-vote-yea"></i>
+            </div>
+            <div class="font-semibold">PILKAOS</div>
+            <div class="text-xs mt-1" style="color: var(--text-secondary);">Pemilihan Ketua OSIS</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Progja Description -->
+      <div class="mt-12 text-center">
+        <p class="text-lg mb-4" style="color: var(--text-secondary);">
+          Program kerja yang dilaksanakan selama periode kepengurusan
+        </p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-primary);">PILKAOS</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Pemilihan Ketua OSIS</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-secondary);">FORKSA</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Forum Komunikasi Sekolah</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-tertiary);">FKB</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Forum Komunikasi Berkelanjutan</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-primary);">MISERA</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Mid Semester Aspiration</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-secondary);">HAKRAB</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Hari Keakraban</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-tertiary);">Studi Banding</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Studi Banding</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg-card);">
+            <div class="font-bold" style="color: var(--accent-primary);">GBHK</div>
+            <div class="text-xs" style="color: var(--text-secondary);">Garis Besar Haluan Kerja</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notes Section dengan Fitur Komentar -->
+  <section id="notes" style="padding: 5rem 0; background: var(--bg-secondary);">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-12">
+        <h2 class="text-4xl font-bold mb-4 sm:mb-0">
+          <span class="gradient-bg bg-clip-text text-transparent">Notes & Komentar</span>
+        </h2>
+        <button id="addNoteBtn" class="btn-primary">
+          <i class="fas fa-plus mr-2"></i>Add Note
+        </button>
+      </div>
+      
+      <!-- Notes Grid -->
+      <div id="notesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="col-span-full text-center py-12">
+          <div class="loading-spinner mx-auto mb-4"></div>
+          <p style="color: var(--text-secondary);">Loading notes...</p>
+        </div>
+      </div>
+      
+      <!-- Notes Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12">
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-primary);" id="totalNotes">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Total Notes</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-secondary);" id="todayNotes">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">Today's Notes</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-tertiary);" id="weekNotes">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">This Week</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+          <div class="text-3xl font-bold mb-2" style="color: var(--accent-primary);" id="monthNotes">0</div>
+          <div class="text-sm" style="color: var(--text-secondary);">This Month</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="padding: 2rem 0; background: var(--bg-primary); text-align: center;">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <a href="#home" class="text-2xl font-bold">
+            <span class="gradient-bg bg-clip-text text-transparent">Sekre</span>
+            <span style="color: var(--accent-primary);">MPK</span>
+          </a>
+        </div>
+        
+        <div class="flex space-x-4 mb-4 md:mb-0">
+          <a href="https://github.com/Syam192" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+            <i class="fab fa-github" style="color: var(--accent-primary);"></i>
+          </a>
+          <a href="https://www.instagram.com/seshabie" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
+            <i class="fab fa-instagram" style="color: var(--accent-tertiary);"></i>
+          </a>
+        </div>
+        
+        <p style="color: var(--text-secondary);">© 2026 Sekre MPK. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Task Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" id="taskModalTitle">Tambah Tugas</h3>
+        <button onclick="closeTaskModal()" class="text-2xl hover:opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="taskForm" class="space-y-4">
+        <input type="hidden" id="taskId">
+        
+        <!-- Title -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Judul Tugas</label>
+          <input type="text" id="taskTitle" required class="form-input" placeholder="Contoh: Proposal kegiatan">
+        </div>
+        
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Deskripsi</label>
+          <textarea id="taskDesc" rows="2" class="form-input" placeholder="Detail tugas..."></textarea>
+        </div>
+        
+        <!-- Assignee -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Ditugaskan Kepada</label>
+          <select id="taskAssignee" required class="form-input">
+            <option value="both">Keduanya</option>
+            <option value="sekre1">Sekre 1</option>
+            <option value="sekre2">Sekre 2</option>
+          </select>
+        </div>
+        
+        <!-- Deadline -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Deadline</label>
+          <input type="text" id="taskDeadline" class="form-input" placeholder="Pilih tanggal dan waktu" required>
+        </div>
+        
+        <!-- Priority -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Prioritas</label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2">
+              <input type="radio" name="priority" value="high" checked> 
+              <span class="w-3 h-3 rounded-full bg-red-500"></span> Tinggi
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="priority" value="medium"> 
+              <span class="w-3 h-3 rounded-full bg-yellow-500"></span> Sedang
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="priority" value="low"> 
+              <span class="w-3 h-3 rounded-full bg-green-500"></span> Rendah
+            </label>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeTaskModal()" class="flex-1 btn-outline">Batal</button>
+          <button type="submit" class="flex-1 btn-primary">Simpan Tugas</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Timeline Modal -->
+  <div id="timelineModal" class="modal">
+    <div class="modal-content max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" id="timelineModalTitle">Add Timeline</h3>
+        <button onclick="closeTimelineModal()" class="text-2xl hover:opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="timelineForm" class="space-y-4">
+        <input type="hidden" id="timelineId">
+        
+        <!-- Date Picker -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Date</label>
+          <input type="text" id="timelineDate" class="form-input" placeholder="Select date" required>
+        </div>
+        
+        <!-- Title -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Title</label>
+          <input type="text" id="timelineTitle" class="form-input" placeholder="e.g., GBHK, PILKAOS" required>
+        </div>
+        
+        <!-- Subtitle -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Subtitle</label>
+          <input type="text" id="timelineSubtitle" class="form-input" placeholder="e.g.," required>
+        </div>
+        
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Description</label>
+          <textarea id="timelineDesc" rows="3" class="form-input" placeholder="Additional details..."></textarea>
+        </div>
+        
+        <!-- Status Options -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Status</label>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="status-option" data-status="selesai" onclick="selectStatus('selesai')">
+              <div class="status-color selesai"></div>
+              <span class="text-sm">Selesai</span>
+            </div>
+            <div class="status-option" data-status="progress" onclick="selectStatus('progress')">
+              <div class="status-color progress"></div>
+              <span class="text-sm">Progress</span>
+            </div>
+            <div class="status-option" data-status="belum" onclick="selectStatus('belum')">
+              <div class="status-color belum"></div>
+              <span class="text-sm">Belum</span>
+            </div>
+          </div>
+          <input type="hidden" id="timelineStatus" value="progress">
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeTimelineModal()" class="flex-1 btn-outline">Cancel</button>
+          <button type="submit" class="flex-1 btn-primary">Save Timeline</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notes Modal dengan Fitur Komentar -->
+  <div id="notesModal" class="modal">
+    <div class="modal-content max-w-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Add New Note</h3>
+        <button onclick="closeNotesModal()" class="text-2xl hover:opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="notesForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Title</label>
+          <input type="text" id="noteTitle" required class="form-input" placeholder="Note title...">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2">Category</label>
+          <select id="noteCategory" required class="form-input">
+            <option value="personal">Personal</option>
+            <option value="work">Work</option>
+            <option value="idea">Idea</option>
+            <option value="task">Task</option>
+            <option value="reminder">Reminder</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2">Note Content</label>
+          <textarea id="noteContent" rows="5" required class="form-input" placeholder="Write your note here..."></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2">Color</label>
+          <div class="flex gap-2">
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #ff6b6b;" data-color="#ff6b6b"></button>
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #4ecdc4;" data-color="#4ecdc4"></button>
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #45b7d1;" data-color="#45b7d1"></button>
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #96ceb4;" data-color="#96ceb4"></button>
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #ffeaa7;" data-color="#ffeaa7"></button>
+            <button type="button" class="color-option w-8 h-8 rounded-full" style="background: #fab1a0;" data-color="#fab1a0"></button>
+          </div>
+          <input type="hidden" id="noteColor" value="#ff6b6b">
+        </div>
+        
+        <!-- Hidden field untuk menyimpan ID note yang sedang dilihat -->
+        <input type="hidden" id="currentNoteId">
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeNotesModal()" class="flex-1 btn-outline">Cancel</button>
+          <button type="submit" class="flex-1 btn-primary">Add Note</button>
+        </div>
+      </form>
+      
+      <!-- Section Komentar -->
+      <div id="commentsSection" class="comments-section hidden">
+        <h4 class="font-semibold mb-3 flex items-center gap-2">
+          <i class="fas fa-comments" style="color: var(--accent-primary);"></i>
+          Komentar
+        </h4>
+        
+        <!-- Daftar Komentar -->
+        <div id="commentsList" class="space-y-3 max-h-60 overflow-y-auto mb-4"></div>
+        
+        <!-- Form Tambah Komentar -->
+        <div class="flex gap-2">
+          <input type="text" id="commentInput" placeholder="Tulis komentar..." 
+                 class="flex-1 form-input text-sm py-2">
+          <button onclick="addComment()" class="btn-primary py-2 px-4 text-sm">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== FIREBASE CONFIGURATION ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgGgHtDwTpzqEy2mqPqdeeG-htQ94U9W0",
+      authDomain: "web-sekre.firebaseapp.com",
+      projectId: "web-sekre",
+      storageBucket: "web-sekre.firebasestorage.app",
+      messagingSenderId: "835875867640",
+      appId: "1:835875867640:web:6ce6cbb7f34ecce057e40d",
+      measurementId: "G-WP2S5VLLJR"
+    };
+
+    // Initialize Firebase
+    let app, analytics, storage, db;
+    
+    try {
+      app = firebase.initializeApp(firebaseConfig);
+      analytics = firebase.analytics();
+      storage = firebase.storage();
+      db = firebase.firestore();
+      
+      console.log('✅ Firebase initialized successfully!');
+      console.log('📁 Project ID:', firebaseConfig.projectId);
+      
+      // Test Firestore connection
+      db.collection('test').doc('test').get()
+        .then(() => console.log('✅ Firestore connection successful'))
+        .catch(err => console.error('❌ Firestore connection failed:', err));
+      
+    } catch (error) {
+      console.error('❌ Firebase initialization failed:', error);
+      alert('Firebase initialization failed. Please check your internet connection.');
+    }
+
+    // ==================== GLOBAL VARIABLES ====================
+    let currentUser = localStorage.getItem('currentUser') || 'sekre1';
+    let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    let currentNoteId = null;
+    let commentsListener = null;
+    let lastDoc = null;
+    let currentCategory = 'all';
+    let isLoading = false;
+    let currentTaskFilter = 'all';
+
+    // ==================== THEME TOGGLE ====================
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlElement = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      htmlElement.classList.remove('dark');
+      htmlElement.classList.add('light');
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      htmlElement.classList.add('dark');
+      htmlElement.classList.remove('light');
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (htmlElement.classList.contains('dark')) {
+        htmlElement.classList.remove('dark');
+        htmlElement.classList.add('light');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+        localStorage.setItem('theme', 'light');
+      } else {
+        htmlElement.classList.remove('light');
+        htmlElement.classList.add('dark');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // ==================== USER SWITCH FUNCTIONS dengan POPUP BERBEDA ====================
+    window.toggleUserDropdown = function() {
+      const dropdown = document.getElementById('userDropdown');
+      dropdown.classList.toggle('show');
+    };
+
+    window.switchUser = function(user) {
+      const previousUser = currentUser;
+      currentUser = user;
+      localStorage.setItem('currentUser', user);
+      
+      // Update avatar
+      const avatar = document.getElementById('currentUserAvatar');
+      avatar.className = `user-avatar ${user}`;
+      avatar.textContent = user === 'sekre1' ? 'S1' : 'S2';
+      
+      // Update welcome message
+      const welcomeEl = document.getElementById('welcomeUser');
+      if (welcomeEl) {
+        welcomeEl.textContent = user === 'sekre1' ? 'Sekre 1' : 'Sekre 2';
+        welcomeEl.style.color = user === 'sekre1' ? 'var(--accent-primary)' : 'var(--accent-tertiary)';
+      }
+      
+      // Update active state in dropdown
+      document.querySelectorAll('.user-dropdown-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      const activeItem = document.querySelector(`.user-dropdown-item[data-user="${user}"]`);
+      if (activeItem) activeItem.classList.add('active');
+      
+      // Close dropdown
+      document.getElementById('userDropdown').classList.remove('show');
+      
+      // ========== POPUP WELCOME BERBEDA TAPI TAMPILAN SAMA SEPERTI AWAL ==========
+      if (user === 'sekre1') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Selamat Datang, Sekre 1!',
+          html: `
+            <div style="text-align: left;">
+              <p class="mb-2">👋 <strong>Halo Sekre 1!</strong></p>
+              <p class="mb-2">Anda memiliki tanggung jawab untuk memimpin dan mengkoordinir semua tugas kesekretariatan.</p>
+              <p class="mb-2">Semangat memimpin!</p>
+            </div>
+          `,
+          confirmButtonText: 'OK',
+          confirmButtonColor: 'var(--accent-primary)',
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)'
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'Halo Sekre 2!',
+          html: `
+            <div style="text-align: left;">
+              <p class="mb-2">👋 <strong>Selamat datang Sekre 2!</strong></p>
+              <p class="mb-2">Jangan lupa untuk membantu Sekre 1 dan selalu semangat!</p>
+              <p class="mb-2">Tetap semangat! 💪</p>
+            </div>
+          `,
+          confirmButtonText: 'OK',
+          confirmButtonColor: 'var(--accent-tertiary)',
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)'
+        });
+      }
+      
+      // Reload tasks untuk menampilkan tugas berdasarkan user
+      loadTasks();
+    };
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('userDropdown');
+      const avatar = document.getElementById('currentUserAvatar');
+      
+      if (avatar && !avatar.contains(e.target) && dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('show');
+      }
+      
+      const notifDropdown = document.getElementById('notificationDropdown');
+      const notifBtn = document.getElementById('notificationBtn');
+      
+      if (notifBtn && !notifBtn.contains(e.target) && notifDropdown && !notifDropdown.contains(e.target)) {
+        notifDropdown.classList.remove('show');
+      }
+    });
+
+    // ==================== NOTIFICATION FUNCTIONS ====================
+    function saveNotifications() {
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+    }
+
+    window.addNotification = function(message, type = 'info', taskId = null) {
+      const notification = {
+        id: Date.now(),
+        message,
+        type,
+        taskId,
+        read: false,
+        timestamp: new Date().toISOString()
+      };
+      
+      notifications.unshift(notification);
+      saveNotifications();
+      updateNotificationBadge();
+      renderNotifications();
+      
+      // Show popup notification
+      Swal.fire({
+        icon: type === 'task' ? 'info' : 'success',
+        title: 'Notifikasi Baru',
+        text: message,
+        timer: 3000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
+      });
+    };
+
+    function updateNotificationBadge() {
+      const unreadCount = notifications.filter(n => !n.read).length;
+      const badge = document.getElementById('notificationCount');
+      
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function renderNotifications() {
+      const list = document.getElementById('notificationList');
+      if (!list) return;
+      
+      if (notifications.length === 0) {
+        list.innerHTML = '<div class="p-3 text-center text-gray-400">Tidak ada notifikasi</div>';
+        return;
+      }
+      
+      let html = '';
+      notifications.forEach(notif => {
+        const date = new Date(notif.timestamp);
+        const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        
+        html += `
+          <div class="p-3 border-b border-gray-700 ${notif.read ? 'opacity-60' : ''}" 
+               onclick="markNotificationRead(${notif.id})">
+            <div class="flex items-start gap-2">
+              <i class="fas ${notif.type === 'task' ? 'fa-tasks' : 'fa-info-circle'} mt-1" 
+                 style="color: ${notif.type === 'task' ? 'var(--accent-primary)' : 'var(--accent-tertiary)'};"></i>
+              <div class="flex-1">
+                <p class="text-sm">${notif.message}</p>
+                <p class="text-xs text-gray-400 mt-1">${timeStr}</p>
+              </div>
+              ${!notif.read ? '<span class="w-2 h-2 bg-pink-500 rounded-full"></span>' : ''}
+            </div>
+          </div>
+        `;
+      });
+      
+      list.innerHTML = html;
+    }
+
+    window.markNotificationRead = function(id) {
+      const notif = notifications.find(n => n.id === id);
+      if (notif) {
+        notif.read = true;
+        saveNotifications();
+        updateNotificationBadge();
+        renderNotifications();
+      }
+    };
+
+    window.markAllNotificationsRead = function() {
+      notifications.forEach(n => n.read = true);
+      saveNotifications();
+      updateNotificationBadge();
+      renderNotifications();
+    };
+
+    // Toggle notification dropdown
+    const notifBtn = document.getElementById('notificationBtn');
+    if (notifBtn) {
+      notifBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = document.getElementById('notificationDropdown');
+        dropdown.classList.toggle('show');
+      });
+    }
+
+    const clearNotifBtn = document.getElementById('clearNotifications');
+    if (clearNotifBtn) {
+      clearNotifBtn.addEventListener('click', function() {
+        markAllNotificationsRead();
+      });
+    }
+
+    // ==================== MOBILE MENU ====================
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+
+    // Close mobile menu when clicking links
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+      });
+    });
+
+    // ==================== SMOOTH SCROLL ====================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          // Close mobile menu after clicking
+          if (mobileMenu) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // ==================== ACTIVE NAVIGATION LINK ====================
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    function updateActiveNavLink() {
+      let current = '';
+      
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        const sectionBottom = sectionTop + section.offsetHeight;
+        if (window.scrollY >= sectionTop && window.scrollY < sectionBottom) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').substring(1) === current) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateActiveNavLink);
+
+    // ==================== TASK FUNCTIONS dengan FILTER ====================
+    const tasksGrid = document.getElementById('tasksGrid');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const taskModal = document.getElementById('taskModal');
+    const taskForm = document.getElementById('taskForm');
+    const taskModalTitle = document.getElementById('taskModalTitle');
+    const taskId = document.getElementById('taskId');
+    const taskTitle = document.getElementById('taskTitle');
+    const taskDesc = document.getElementById('taskDesc');
+    const taskAssignee = document.getElementById('taskAssignee');
+    const taskDeadline = document.getElementById('taskDeadline');
+    
+    const totalTasksEl = document.getElementById('totalTasks');
+    const pendingTasksEl = document.getElementById('pendingTasks');
+    const completedTasksEl = document.getElementById('completedTasks');
+    const overdueTasksEl = document.getElementById('overdueTasks');
+
+    // Filter buttons
+    const filterAll = document.getElementById('filterAll');
+    const filterPending = document.getElementById('filterPending');
+    const filterCompleted = document.getElementById('filterCompleted');
+    const filterOverdue = document.getElementById('filterOverdue');
+
+    // Task filter function
+    window.filterTasks = function(filter) {
+      currentTaskFilter = filter;
+      
+      // Update active state on filter buttons
+      document.querySelectorAll('.task-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+      
+      // Reload tasks with filter
+      loadTasks();
+    };
+
+    // Initialize Flatpickr for task deadline
+    if (taskDeadline) {
+      try {
+        flatpickr(taskDeadline, {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+          altInput: true,
+          altFormat: "d F Y H:i",
+          minDate: "today",
+          locale: { firstDayOfWeek: 1 }
+        });
+      } catch (error) {
+        console.error('❌ Flatpickr error:', error);
+      }
+    }
+
+    // Open task modal for add
+    if (addTaskBtn) {
+      addTaskBtn.addEventListener('click', function() {
+        taskModalTitle.textContent = 'Tambah Tugas';
+        taskForm.reset();
+        taskId.value = '';
+        if (taskDeadline && taskDeadline._flatpickr) {
+          taskDeadline._flatpickr.clear();
+        }
+        taskModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    // Close task modal
+    window.closeTaskModal = function() {
+      taskModal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    };
+
+    // Open task modal for edit
+    window.editTask = function(id, title, desc, assignee, deadline, priority, status) {
+      taskModalTitle.textContent = 'Edit Tugas';
+      taskId.value = id;
+      taskTitle.value = title;
+      taskDesc.value = desc || '';
+      taskAssignee.value = assignee;
+      
+      if (taskDeadline && taskDeadline._flatpickr) {
+        taskDeadline._flatpickr.setDate(deadline);
+      }
+      
+      // Set priority radio
+      document.querySelectorAll('input[name="priority"]').forEach(radio => {
+        radio.checked = radio.value === priority;
+      });
+      
+      taskModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    };
+
+    // Submit task form
+    if (taskForm) {
+      taskForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!db) {
+          alert('Firebase not initialized. Please refresh the page.');
+          return;
+        }
+
+        const id = taskId.value;
+        const title = taskTitle.value;
+        const desc = taskDesc.value;
+        const assignee = taskAssignee.value;
+        const deadline = taskDeadline.value;
+        const priority = document.querySelector('input[name="priority"]:checked').value;
+        const status = 'pending';
+
+        if (!title || !deadline) {
+          alert('Please fill in all required fields');
+          return;
+        }
+
+        const taskData = {
+          title,
+          desc: desc || '',
+          assignee,
+          deadline,
+          priority,
+          status,
+          completed: false,
+          completedAt: null,
+          completedBy: null,
+          createdBy: currentUser,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          timestamp: Date.now()
+        };
+
+        try {
+          if (id) {
+            await db.collection('tasks').doc(id).update(taskData);
+            
+            // Add notification for other user
+            if (assignee !== currentUser) {
+              addNotification(`Tugas "${title}" diperbarui untuk ${assignee === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'task');
+            }
+          } else {
+            const docRef = await db.collection('tasks').add(taskData);
+            
+            // Add notification for other user
+            if (assignee !== currentUser) {
+              addNotification(`Tugas baru: "${title}" untuk ${assignee === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'task');
+            }
+            
+            // Success message
+            Swal.fire({
+              icon: 'success',
+              title: 'Tugas Ditambahkan!',
+              text: 'Jangan lupa dikerjakan ya',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+
+          closeTaskModal();
+          loadTasks();
+          
+        } catch (error) {
+          console.error('❌ Firebase error:', error);
+          alert('Error: ' + error.message);
+        }
+      });
+    }
+
+    // Mark task as complete
+    window.completeTask = async function(id, title) {
+      if (!db) return;
+      
+      try {
+        await db.collection('tasks').doc(id).update({
+          status: 'completed',
+          completed: true,
+          completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          completedBy: currentUser
+        });
+        
+        // Show celebration
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 Tugas Selesai!',
+          text: `"${title}" telah diselesaikan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        // Add notification for other user
+        addNotification(`Tugas "${title}" telah diselesaikan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'task');
+        
+        loadTasks();
+      } catch (error) {
+        console.error('Error completing task:', error);
+      }
+    };
+
+    // Delete task
+    window.deleteTask = async function(id) {
+      if (!db) return;
+      
+      if (confirm('Yakin ingin menghapus tugas ini?')) {
+        try {
+          await db.collection('tasks').doc(id).delete();
+          loadTasks();
+        } catch (error) {
+          console.error('Error deleting task:', error);
+        }
+      }
+    };
+
+    // Load tasks with filter
+    async function loadTasks() {
+      if (!tasksGrid || !db) return;
+
+      try {
+        const snapshot = await db.collection('tasks')
+          .orderBy('timestamp', 'desc')
+          .get();
+
+        if (snapshot.empty) {
+          tasksGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+              <i class="fas fa-tasks text-5xl mb-4" style="color: var(--text-secondary); opacity: 0.5;"></i>
+              <p style="color: var(--text-secondary);">Belum ada tugas</p>
+              <p class="text-sm mt-2">Klik "Tambah Tugas" untuk membuat tugas baru</p>
+            </div>
+          `;
+          updateTaskStats([]);
+          return;
+        }
+
+        let html = '';
+        const tasks = [];
+        const now = Date.now();
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          tasks.push(data);
+          
+          const deadline = new Date(data.deadline);
+          const deadlineTime = deadline.getTime();
+          const isOverdue = deadlineTime < now && !data.completed;
+          
+          // Apply filter
+          if (currentTaskFilter === 'completed' && !data.completed) return;
+          if (currentTaskFilter === 'pending' && (data.completed || isOverdue)) return;
+          if (currentTaskFilter === 'overdue' && (!isOverdue || data.completed)) return;
+          
+          const statusClass = data.completed ? 'completed' : (isOverdue ? 'overdue' : 'pending');
+          
+          // Determine if task should be shown based on current user
+          const showTask = data.assignee === 'both' || data.assignee === currentUser;
+          if (!showTask) return;
+          
+          const assigneeText = data.assignee === 'both' ? 'Keduanya' : (data.assignee === 'sekre1' ? 'Sekre 1' : 'Sekre 2');
+          const assigneeClass = data.assignee === 'sekre1' ? 'assignee-sekre1' : (data.assignee === 'sekre2' ? 'assignee-sekre2' : '');
+          
+          const completedByText = data.completedBy ? ` oleh ${data.completedBy === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}` : '';
+          
+          html += `
+            <div class="task-card ${statusClass}">
+              <div class="task-priority ${data.priority}"></div>
+              <div class="flex justify-between items-start mb-3">
+                <span class="task-assignee ${assigneeClass}">${assigneeText}</span>
+                <span class="text-xs" style="color: var(--text-secondary);">
+                  ${deadline.toLocaleDateString('id-ID')} ${deadline.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <h3 class="text-lg font-bold mb-2">${data.title}</h3>
+              ${data.desc ? `<p class="text-sm mb-3" style="color: var(--text-secondary);">${data.desc}</p>` : ''}
+              <div class="flex justify-between items-center mt-4">
+                <div>
+                  ${data.completed ? 
+                    `<span class="text-xs" style="color: var(--status-selesai);">
+                      <i class="fas fa-check-circle mr-1"></i>Selesai${completedByText}
+                    </span>` : 
+                    (isOverdue ? 
+                      `<span class="text-xs" style="color: var(--status-belum);">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>Terlewat
+                      </span>` : 
+                      `<span class="text-xs" style="color: var(--status-progress);">
+                        <i class="fas fa-clock mr-1"></i>Pending
+                      </span>`)
+                  }
+                </div>
+                <div class="flex gap-2">
+                  ${!data.completed ? `
+                    <button onclick="completeTask('${doc.id}', '${data.title.replace(/'/g, "\\'")}')" class="timeline-btn complete" title="Selesaikan">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  ` : ''}
+                  <button onclick='editTask("${doc.id}", "${data.title.replace(/'/g, "\\'")}", "${data.desc ? data.desc.replace(/'/g, "\\'") : ''}", "${data.assignee}", "${data.deadline}", "${data.priority}", "${data.status}")' class="timeline-btn edit" title="Edit">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button onclick="deleteTask('${doc.id}')" class="timeline-btn delete" title="Hapus">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        if (html === '') {
+          html = '<div class="col-span-full text-center py-12">Tidak ada tugas dengan filter ini</div>';
+        }
+        
+        tasksGrid.innerHTML = html;
+        updateTaskStats(tasks);
+
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        tasksGrid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Error loading tasks</div>';
+      }
+    }
+
+    function updateTaskStats(tasks) {
+      const now = Date.now();
+      
+      const total = tasks.length;
+      const pending = tasks.filter(t => !t.completed && new Date(t.deadline).getTime() > now).length;
+      const completed = tasks.filter(t => t.completed).length;
+      const overdue = tasks.filter(t => !t.completed && new Date(t.deadline).getTime() < now).length;
+      
+      if (totalTasksEl) totalTasksEl.textContent = total;
+      if (pendingTasksEl) pendingTasksEl.textContent = pending;
+      if (completedTasksEl) completedTasksEl.textContent = completed;
+      if (overdueTasksEl) overdueTasksEl.textContent = overdue;
+    }
+
+    // ==================== TIMELINE FUNCTIONS ====================
+    const timelineContainer = document.getElementById('timelineContainer');
+    const addTimelineBtn = document.getElementById('addTimelineBtn');
+    const timelineModal = document.getElementById('timelineModal');
+    const timelineForm = document.getElementById('timelineForm');
+    const timelineModalTitle = document.getElementById('timelineModalTitle');
+    const timelineId = document.getElementById('timelineId');
+    const timelineDate = document.getElementById('timelineDate');
+    const timelineTitle = document.getElementById('timelineTitle');
+    const timelineSubtitle = document.getElementById('timelineSubtitle');
+    const timelineDesc = document.getElementById('timelineDesc');
+    const timelineStatus = document.getElementById('timelineStatus');
+
+    // Initialize Flatpickr for timeline
+    if (timelineDate) {
+      try {
+        flatpickr(timelineDate, {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+          altInput: true,
+          altFormat: "F j, Y H:i",
+          locale: { firstDayOfWeek: 1 }
+        });
+      } catch (error) {
+        console.error('❌ Flatpickr error:', error);
+      }
+    }
+
+    // Select status function
+    window.selectStatus = function(status) {
+      if (timelineStatus) {
+        timelineStatus.value = status;
+        document.querySelectorAll('.status-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        const selected = document.querySelector(`.status-option[data-status="${status}"]`);
+        if (selected) selected.classList.add('selected');
+      }
+    };
+
+    // Open timeline modal for add
+    if (addTimelineBtn) {
+      addTimelineBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (timelineModal) {
+          timelineModalTitle.textContent = 'Add Timeline';
+          if (timelineForm) timelineForm.reset();
+          if (timelineId) timelineId.value = '';
+          if (timelineDate && timelineDate._flatpickr) {
+            timelineDate._flatpickr.clear();
+          }
+          selectStatus('progress');
+          timelineModal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }
+
+    // Open timeline modal for edit
+    window.editTimeline = function(id, date, title, subtitle, desc, status) {
+      if (timelineModal) {
+        timelineModalTitle.textContent = 'Edit Timeline';
+        timelineId.value = id;
+        if (timelineDate && timelineDate._flatpickr) {
+          timelineDate._flatpickr.setDate(date);
+        }
+        timelineTitle.value = title;
+        timelineSubtitle.value = subtitle;
+        timelineDesc.value = desc || '';
+        selectStatus(status || 'progress');
+        
+        timelineModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    };
+
+    // Close timeline modal
+    window.closeTimelineModal = function() {
+      if (timelineModal) {
+        timelineModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    // Submit timeline form
+    if (timelineForm) {
+      timelineForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!db) {
+          alert('Firebase not initialized. Please refresh the page.');
+          return;
+        }
+
+        const id = timelineId.value;
+        const date = timelineDate.value;
+        const title = timelineTitle.value;
+        const subtitle = timelineSubtitle.value;
+        const desc = timelineDesc.value;
+        const status = timelineStatus.value;
+
+        if (!date || !title || !subtitle) {
+          alert('Please fill in all required fields');
+          return;
+        }
+
+        const timelineData = {
+          date,
+          title,
+          subtitle,
+          desc: desc || '',
+          status,
+          timestamp: Date.now(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+          if (id) {
+            await db.collection('timeline').doc(id).update(timelineData);
+            alert('Timeline updated successfully!');
+          } else {
+            timelineData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('timeline').add(timelineData);
+            alert('Timeline added successfully!');
+          }
+
+          closeTimelineModal();
+          loadTimeline();
+          
+        } catch (error) {
+          console.error('❌ Firebase error:', error);
+          alert('Error: ' + error.message);
+        }
+      });
+    }
+
+    // Delete timeline
+    window.deleteTimeline = async function(id) {
+      if (!db) {
+        alert('Firebase not initialized');
+        return;
+      }
+      
+      if (confirm('Are you sure you want to delete this timeline item?')) {
+        try {
+          await db.collection('timeline').doc(id).delete();
+          alert('Timeline deleted successfully!');
+          loadTimeline();
+        } catch (error) {
+          console.error('❌ Delete error:', error);
+          alert('Error: ' + error.message);
+        }
+      }
+    };
+
+    // Load timeline
+    async function loadTimeline() {
+      if (!timelineContainer) return;
+      if (!db) {
+        timelineContainer.innerHTML = '<div class="text-center py-12 text-red-400">Firebase not initialized</div>';
+        return;
+      }
+
+      try {
+        const snapshot = await db.collection('timeline')
+          .orderBy('timestamp', 'desc')
+          .get();
+
+        if (snapshot.empty) {
+          timelineContainer.innerHTML = `
+            <div class="text-center py-12">
+              <i class="fas fa-history text-5xl mb-4" style="color: var(--text-secondary); opacity: 0.5;"></i>
+              <p style="color: var(--text-secondary);">No timeline items yet</p>
+              <p class="text-sm mt-2">Click "Add Timeline" to create your first timeline!</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '<div class="timeline">';
+        
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const statusClass = data.status || 'progress';
+          const date = data.date ? new Date(data.date) : new Date(data.timestamp);
+          const formattedDate = date.toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          const statusText = {
+            'selesai': 'Selesai',
+            'progress': 'In Progress',
+            'belum': 'Belum Dimulai'
+          };
+
+          const escapedDesc = (data.desc || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+          html += `
+            <div class="timeline-item">
+              <div class="timeline-dot ${statusClass}"></div>
+              <div class="timeline-content ${statusClass}">
+                <div class="timeline-actions">
+                  <button onclick='editTimeline("${doc.id}", "${data.date}", "${data.title.replace(/'/g, "\\'")}", "${data.subtitle.replace(/'/g, "\\'")}", "${escapedDesc}", "${data.status || 'progress'}")' class="timeline-btn edit" title="Edit">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button onclick="deleteTimeline('${doc.id}')" class="timeline-btn delete" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <span class="status-badge ${statusClass}">${statusText[statusClass]}</span>
+                <span class="text-sm block mb-2" style="color: var(--accent-primary);">${formattedDate}</span>
+                <h3 class="text-xl font-bold mt-2">${data.title}</h3>
+                <p style="color: var(--text-secondary);">${data.subtitle}</p>
+                ${data.desc ? `<p class="text-sm mt-2" style="color: var(--text-secondary);">${data.desc}</p>` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+        timelineContainer.innerHTML = html;
+
+      } catch (error) {
+        console.error('❌ Load error:', error);
+        timelineContainer.innerHTML = `
+          <div class="text-center py-12 text-red-400">
+            <p>Error loading timeline: ${error.message}</p>
+            <button onclick="loadTimeline()" class="mt-4 btn-primary">Try Again</button>
+          </div>
+        `;
+      }
+    }
+
+    // ==================== NOTES FUNCTIONS dengan KOMENTAR ====================
+    const notesGrid = document.getElementById('notesGrid');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const notesModal = document.getElementById('notesModal');
+    const notesForm = document.getElementById('notesForm');
+    const noteTitle = document.getElementById('noteTitle');
+    const noteCategory = document.getElementById('noteCategory');
+    const noteContent = document.getElementById('noteContent');
+    const noteColor = document.getElementById('noteColor');
+    const currentNoteIdInput = document.getElementById('currentNoteId');
+    const commentsSection = document.getElementById('commentsSection');
+    const commentsList = document.getElementById('commentsList');
+    const commentInput = document.getElementById('commentInput');
+    
+    const totalNotesEl = document.getElementById('totalNotes');
+    const todayNotesEl = document.getElementById('todayNotes');
+    const weekNotesEl = document.getElementById('weekNotes');
+    const monthNotesEl = document.getElementById('monthNotes');
+
+    // Color options
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.addEventListener('click', () => {
+        noteColor.value = option.getAttribute('data-color');
+        document.querySelectorAll('.color-option').forEach(opt => {
+          opt.style.transform = 'scale(1)';
+          opt.style.border = 'none';
+        });
+        option.style.transform = 'scale(1.2)';
+        option.style.border = '2px solid white';
+      });
+    });
+
+    // Open notes modal for add
+    if (addNoteBtn) {
+      addNoteBtn.addEventListener('click', () => {
+        // Reset form untuk add new
+        document.querySelector('#notesModal .modal-content h3').textContent = 'Add New Note';
+        notesForm.reset();
+        currentNoteIdInput.value = '';
+        document.getElementById('noteTitle').disabled = false;
+        document.getElementById('noteCategory').disabled = false;
+        document.getElementById('noteContent').disabled = false;
+        document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
+        noteColor.value = '#ff6b6b';
+        commentsSection.classList.add('hidden');
+        
+        // Bersihkan listener
+        if (commentsListener) {
+          commentsListener();
+          commentsListener = null;
+        }
+        
+        notesModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    // Buka note untuk melihat komentar
+    window.openNoteWithComments = async function(noteId, title, category, content, color) {
+      currentNoteId = noteId;
+      currentNoteIdInput.value = noteId;
+      
+      // Tampilkan section komentar
+      commentsSection.classList.remove('hidden');
+      
+      // Update judul modal
+      document.querySelector('#notesModal .modal-content h3').textContent = `Note: ${title}`;
+      
+      // Isi form dengan data note (readonly)
+      document.getElementById('noteTitle').value = title;
+      document.getElementById('noteTitle').disabled = true;
+      document.getElementById('noteCategory').value = category;
+      document.getElementById('noteCategory').disabled = true;
+      document.getElementById('noteContent').value = content;
+      document.getElementById('noteContent').disabled = true;
+      document.getElementById('noteColor').value = color;
+      
+      // Sembunyikan tombol submit
+      document.querySelector('#notesForm button[type="submit"]').style.display = 'none';
+      
+      // Tampilkan modal
+      notesModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+      
+      // Load komentar
+      loadComments(noteId);
+      
+      // Focus ke input komentar
+      setTimeout(() => {
+        commentInput.focus();
+      }, 500);
+    };
+
+    // Load komentar dari Firestore
+    async function loadComments(noteId) {
+      if (!db || !noteId) return;
+      
+      // Bersihkan listener sebelumnya
+      if (commentsListener) {
+        commentsListener();
+      }
+      
+      // Setup real-time listener
+      commentsListener = db.collection('notes').doc(noteId)
+        .collection('comments')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) => {
+          if (snapshot.empty) {
+            commentsList.innerHTML = `
+              <div class="text-center py-4" style="color: var(--text-secondary);">
+                <p class="text-sm">Belum ada komentar</p>
+                <p class="text-xs mt-2">Jadilah yang pertama berkomentar!</p>
+              </div>
+            `;
+            return;
+          }
+          
+          let html = '';
+          snapshot.forEach(doc => {
+            const comment = doc.data();
+            const date = new Date(comment.timestamp);
+            const timeStr = date.toLocaleTimeString('id-ID', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            
+            const isCurrentUser = comment.user === currentUser;
+            
+            html += `
+              <div class="flex ${isCurrentUser ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[80%] p-3 rounded-lg" 
+                     style="background: ${isCurrentUser ? 'var(--accent-primary)' : 'var(--bg-card)'}; 
+                            color: ${isCurrentUser ? 'white' : 'var(--text-primary)'};
+                            border: 1px solid var(--border-glow);">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-semibold ${isCurrentUser ? 'text-white/80' : ''}">
+                      ${comment.user === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}
+                    </span>
+                    <span class="text-xs opacity-70">${timeStr}</span>
+                  </div>
+                  <p class="text-sm">${comment.text}</p>
+                </div>
+              </div>
+            `;
+          });
+          
+          commentsList.innerHTML = html;
+          
+          // Scroll ke bawah
+          commentsList.scrollTop = commentsList.scrollHeight;
+        }, (error) => {
+          console.error('Error loading comments:', error);
+        });
+    }
+
+    // Tambah komentar baru
+    window.addComment = async function() {
+      const text = commentInput.value.trim();
+      
+      if (!text || !currentNoteId || !db) {
+        alert('Tulis komentar terlebih dahulu!');
+        return;
+      }
+      
+      try {
+        await db.collection('notes').doc(currentNoteId)
+          .collection('comments')
+          .add({
+            text: text,
+            user: currentUser,
+            timestamp: Date.now(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        
+        // Kosongkan input
+        commentInput.value = '';
+        
+        // Ambil data note untuk notifikasi
+        const noteDoc = await db.collection('notes').doc(currentNoteId).get();
+        const noteData = noteDoc.data();
+        
+        // Notifikasi untuk user lain
+        addNotification(
+          `💬 Komentar baru pada note "${noteData.title}" dari ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`,
+          'info'
+        );
+        
+      } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Gagal menambahkan komentar: ' + error.message);
+      }
+    };
+
+    // Allow Enter key to send comment
+    if (commentInput) {
+      commentInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          addComment();
+        }
+      });
+    }
+
+    // Override closeNotesModal
+    window.closeNotesModal = function() {
+      // Reset form
+      document.getElementById('noteTitle').disabled = false;
+      document.getElementById('noteCategory').disabled = false;
+      document.getElementById('noteContent').disabled = false;
+      document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
+      
+      // Sembunyikan section komentar
+      commentsSection.classList.add('hidden');
+      
+      // Bersihkan listener
+      if (commentsListener) {
+        commentsListener();
+        commentsListener = null;
+      }
+      
+      // Reset current note ID
+      currentNoteId = null;
+      currentNoteIdInput.value = '';
+      
+      // Tutup modal
+      notesModal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    };
+
+    // Submit note
+    if (notesForm) {
+      notesForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const title = noteTitle.value;
+        const category = noteCategory.value;
+        const content = noteContent.value;
+        const color = noteColor.value;
+
+        if (!title || !content) {
+          alert('Please fill in all required fields');
+          return;
+        }
+
+        try {
+          if (!db) throw new Error('Firestore not initialized');
+
+          await db.collection('notes').add({
+            title,
+            category,
+            content,
+            color,
+            timestamp: Date.now(),
+            createdBy: currentUser,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          alert('Note added successfully!');
+          closeNotesModal();
+          loadNotes();
+          
+          // Notifikasi untuk user lain
+          addNotification(`📝 Note baru: "${title}" ditambahkan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'info');
+          
+        } catch (error) {
+          console.error('❌ Error adding note:', error);
+          alert('Failed to add note: ' + error.message);
+        }
+      });
+    }
+
+    // Delete note
+    window.deleteNote = async function(id) {
+      if (!db) {
+        alert('Firebase not initialized');
+        return;
+      }
+      
+      if (confirm('Are you sure you want to delete this note?')) {
+        try {
+          // Hapus juga semua komentar di dalam note
+          const commentsSnapshot = await db.collection('notes').doc(id).collection('comments').get();
+          const batch = db.batch();
+          
+          commentsSnapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          batch.delete(db.collection('notes').doc(id));
+          await batch.commit();
+          
+          loadNotes();
+          
+          addNotification(`🗑️ Note telah dihapus oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'info');
+          
+        } catch (error) {
+          console.error('❌ Error deleting note:', error);
+          alert('Failed to delete note: ' + error.message);
+        }
+      }
+    };
+
+    // Load notes
+    async function loadNotes() {
+      if (!notesGrid) return;
+      if (!db) {
+        notesGrid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Firebase not initialized</div>';
+        return;
+      }
+
+      try {
+        const snapshot = await db.collection('notes')
+          .orderBy('timestamp', 'desc')
+          .get();
+
+        if (snapshot.empty) {
+          notesGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+              <i class="fas fa-sticky-note text-5xl mb-4" style="color: var(--text-secondary); opacity: 0.5;"></i>
+              <p style="color: var(--text-secondary);">No notes yet</p>
+              <p class="text-sm mt-2">Klik "Add Note" untuk membuat catatan pertama!</p>
+            </div>
+          `;
+          updateNotesStats([]);
+          return;
+        }
+
+        let html = '';
+        const notes = [];
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          notes.push(data);
+          
+          const date = new Date(data.timestamp);
+          const formattedDate = date.toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          html += `
+            <div class="notes-card" style="border-left: 4px solid ${data.color};">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-xs px-2 py-1 rounded-full" style="background: ${data.color}20; color: ${data.color};">${data.category}</span>
+                <div class="flex gap-2">
+                  <button onclick="openNoteWithComments('${doc.id}', '${data.title.replace(/'/g, "\\'")}', '${data.category}', '${data.content.replace(/'/g, "\\'")}', '${data.color}')" 
+                          class="text-sm hover:opacity-70 px-2 py-1 rounded" 
+                          style="color: var(--accent-primary); background: var(--accent-primary)20;" 
+                          title="Lihat & Komentar">
+                    <i class="fas fa-comment mr-1"></i>Komentar
+                  </button>
+                  <button onclick="deleteNote('${doc.id}')" class="text-sm hover:opacity-70" style="color: var(--text-secondary);">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <h3 class="text-lg font-bold mb-2">${data.title}</h3>
+              <p class="text-sm mb-4" style="color: var(--text-secondary);">${data.content}</p>
+              <div class="text-xs flex justify-between items-center" style="color: var(--text-secondary);">
+                <span><i class="far fa-clock mr-1"></i>${formattedDate}</span>
+                <span><i class="far fa-user mr-1"></i>${data.createdBy === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}</span>
+              </div>
+            </div>
+          `;
+        });
+
+        notesGrid.innerHTML = html;
+        updateNotesStats(notes);
+
+      } catch (error) {
+        console.error('❌ Error loading notes:', error);
+        notesGrid.innerHTML = `
+          <div class="col-span-full text-center py-12 text-red-400">
+            <p>Error loading notes: ${error.message}</p>
+            <button onclick="loadNotes()" class="mt-4 btn-primary">Try Again</button>
+          </div>
+        `;
+      }
+    }
+
+    function updateNotesStats(notes) {
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+      const oneWeek = 7 * oneDay;
+      const oneMonth = 30 * oneDay;
+
+      const total = notes.length;
+      const today = notes.filter(note => now - note.timestamp < oneDay).length;
+      const week = notes.filter(note => now - note.timestamp < oneWeek).length;
+      const month = notes.filter(note => now - note.timestamp < oneMonth).length;
+
+      if (totalNotesEl) totalNotesEl.textContent = total;
+      if (todayNotesEl) todayNotesEl.textContent = today;
+      if (weekNotesEl) weekNotesEl.textContent = week;
+      if (monthNotesEl) monthNotesEl.textContent = month;
+    }
+
+    // ==================== GALLERY FUNCTIONS ====================
+    const uploadForm = document.getElementById('uploadForm');
+    const imageFile = document.getElementById('imageFile');
+    const imageCaption = document.getElementById('imageCaption');
+    const imageCategory = document.getElementById('imageCategory');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const progressPercent = document.getElementById('progressPercent');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const galleryGrid = document.getElementById('galleryGrid');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const refreshBtn = document.getElementById('refreshGallery');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const loadingIndicator = document.getElementById('galleryLoading');
+
+    // Gallery modal function
+    window.openGalleryModal = function(url, caption, category, timestamp) {
+      const modal = document.createElement('div');
+      modal.className = 'modal show';
+      
+      const date = new Date(timestamp);
+      const formattedDate = date.toLocaleDateString('id-ID', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      modal.innerHTML = `
+        <div class="modal-content max-w-3xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Photo Preview</h3>
+            <button onclick="this.closest('.modal').remove()" class="text-2xl hover:opacity-70">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <img src="${url}" alt="${caption}" class="w-full max-h-[70vh] object-contain rounded-lg" onerror="this.src='https://via.placeholder.com/400'">
+          <div class="mt-4">
+            <p class="font-semibold">${caption || '-'}</p>
+            <p class="text-sm mt-1" style="color: var(--text-secondary);">${category} • ${formattedDate}</p>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      document.body.style.overflow = 'hidden';
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          document.body.style.overflow = 'auto';
+        }
+      });
+    };
+
+    // Upload photo
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const file = imageFile.files[0];
+        if (!file) {
+          showMessage('Please select an image!', 'error');
+          return;
+        }
+
+        if (file.size > 1024 * 1024) {
+          showMessage('File size must be less than 1MB!', 'error');
+          return;
+        }
+
+        const caption = imageCaption.value.trim() || 'No caption';
+        const category = imageCategory.value;
+
+        try {
+          if (!storage) throw new Error('Storage not initialized');
+
+          progressContainer.classList.remove('hidden');
+          uploadBtn.disabled = true;
+
+          const timestamp = Date.now();
+          const filename = `gallery/${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+          const storageRef = storage.ref(filename);
+
+          const uploadTask = storageRef.put(file);
+
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              progressFill.style.width = progress + '%';
+              progressPercent.textContent = Math.round(progress) + '%';
+            },
+            (error) => {
+              console.error('Upload error:', error);
+              showMessage('Upload failed: ' + error.message, 'error');
+              resetUploadForm();
+            },
+            async () => {
+              const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+
+              await db.collection('gallery').add({
+                filename,
+                url: downloadURL,
+                caption,
+                category,
+                timestamp,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+
+              showMessage('Upload successful!', 'success');
+              resetUploadForm();
+              loadGallery(true);
+            }
+          );
+
+        } catch (error) {
+          console.error('Error:', error);
+          showMessage('Error: ' + error.message, 'error');
+          resetUploadForm();
+        }
+      });
+    }
+
+    function resetUploadForm() {
+      progressContainer.classList.add('hidden');
+      progressFill.style.width = '0%';
+      progressPercent.textContent = '0%';
+      uploadBtn.disabled = false;
+      imageFile.value = '';
+      setTimeout(() => {
+        uploadMessage.classList.add('hidden');
+      }, 3000);
+    }
+
+    function showMessage(msg, type) {
+      uploadMessage.textContent = msg;
+      uploadMessage.className = `mt-4 text-sm p-3 rounded ${
+        type === 'error' 
+          ? 'bg-red-500/20 text-red-400' 
+          : 'bg-green-500/20 text-green-400'
+      }`;
+      uploadMessage.classList.remove('hidden');
+    }
+
+    // Load gallery dari Firebase
+    async function loadGallery(reset = false) {
+      if (isLoading || !galleryGrid || !db) return;
+      isLoading = true;
+
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+
+      try {
+        let query = db.collection('gallery')
+          .orderBy('timestamp', 'desc')
+          .limit(12);
+
+        if (currentCategory !== 'all') {
+          query = query.where('category', '==', currentCategory);
+        }
+
+        if (lastDoc && !reset) {
+          query = query.startAfter(lastDoc);
+        }
+
+        const snapshot = await query.get();
+
+        if (reset) {
+          const firebasePhotos = document.querySelectorAll('.gallery-item:not(.default-photo)');
+          firebasePhotos.forEach(photo => photo.remove());
+          lastDoc = null;
+        }
+
+        if (!snapshot.empty) {
+          lastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            const existingPhoto = document.querySelector(`[data-firebase-id="${doc.id}"]`);
+            if (existingPhoto) return;
+            
+            const div = document.createElement('div');
+            div.className = 'gallery-item firebase-photo';
+            div.setAttribute('data-firebase-id', doc.id);
+            div.setAttribute('data-category', data.category);
+            div.setAttribute('onclick', `openGalleryModal('${data.url}', '${data.caption.replace(/'/g, "\\'")}', '${data.category}', ${data.timestamp})`);
+            
+            const date = new Date(data.timestamp);
+            const formattedDate = date.toLocaleDateString('id-ID');
+            
+            div.innerHTML = `
+              <img src="${data.url}" alt="${data.caption}" loading="lazy" onerror="this.src='https://via.placeholder.com/200'">
+              <div class="overlay">
+                <p class="text-sm font-semibold truncate">${data.caption || '-'}</p>
+                <p class="text-xs text-gray-300 mt-1">${data.category} • ${formattedDate}</p>
+              </div>
+            `;
+            
+            galleryGrid.appendChild(div);
+          });
+
+          if (loadMoreBtn) {
+            const nextQuery = query.startAfter(lastDoc).limit(1);
+            const nextSnapshot = await nextQuery.get();
+            loadMoreBtn.classList.toggle('hidden', nextSnapshot.empty);
+          }
+        }
+
+        filterGalleryByCategory();
+
+      } catch (error) {
+        console.error('Load error:', error);
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // Filter gallery berdasarkan kategori
+    function filterGalleryByCategory() {
+      const allItems = document.querySelectorAll('.gallery-item');
+      
+      allItems.forEach(item => {
+        const itemCategory = item.getAttribute('data-category');
+        
+        if (currentCategory === 'all' || currentCategory === itemCategory) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // Gallery filters
+    if (categoryFilter) {
+      categoryFilter.addEventListener('change', (e) => {
+        currentCategory = e.target.value;
+        filterGalleryByCategory();
+        loadGallery(true);
+      });
+    }
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        loadGallery(true);
+      });
+    }
+
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener('click', () => {
+        loadGallery();
+      });
+    }
+
+    // ==================== INITIAL LOAD ====================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('📄 DOM loaded');
+      
+      // Initialize current user
+      switchUser(currentUser);
+      
+      // Render notifications
+      renderNotifications();
+      updateNotificationBadge();
+      
+      if (db) {
+        setTimeout(() => {
+          loadTimeline();
+          loadNotes();
+          loadTasks();
+          loadGallery(true);
+          
+        }, 500);
+      }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(modal => {
+          modal.classList.remove('show');
+          document.body.style.overflow = 'auto';
+        });
+      }
+    });
+  </script>
+</body>
+</html>
