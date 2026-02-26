@@ -559,6 +559,11 @@
       color: var(--text-secondary);
     }
 
+    .form-input:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
     /* Flatpickr Customization */
     .flatpickr-calendar {
       background: var(--bg-card) !important;
@@ -854,6 +859,123 @@
       word-wrap: break-word;
     }
 
+    /* Comments Section */
+    .comments-section {
+      border-top: 1px solid var(--border-glow);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    .comment-bubble {
+      max-width: 80%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-bubble.own {
+      background: var(--accent-primary);
+      color: white;
+      margin-left: auto;
+    }
+
+    .comment-bubble.other {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+    }
+
+    /* Task Filter Buttons */
+    .task-filter-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--text-secondary);
+    }
+
+    .task-filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .task-filter-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    /* Delete button for gallery */
+    .gallery-delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border: none;
+    }
+
+    .gallery-item:hover .gallery-delete-btn {
+      opacity: 1;
+    }
+
+    .gallery-delete-btn:hover {
+      transform: scale(1.1);
+      background: #ef4444;
+    }
+
+    /* Password input for delete */
+    .password-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-card);
+      border: 2px solid var(--border-glow);
+      border-radius: 8px;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .password-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 15px var(--shadow-color);
+    }
+
+    /* Inline Comments */
+    .inline-comments-container {
+      border-top: 1px solid var(--border-glow);
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+
+    .comments-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 0.75rem;
+    }
+
+    .comments-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 5px;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .timeline::before {
@@ -880,6 +1002,10 @@
       #notificationDropdown {
         width: 280px;
         right: -20px;
+      }
+      
+      .task-filters {
+        flex-wrap: wrap;
       }
     }
 
@@ -936,10 +1062,10 @@
         <!-- Logo -->
         <a href="#home" class="text-2xl font-bold">
           <span class="gradient-bg bg-clip-text text-transparent">Sekre</span>
-          <span style="color: var(--accent-primary)">MPK</span>
+          <span style="color: var(--accent-primary);">MPK</span>
         </a>
         
-        <!-- Desktop Menu - HARUS TAMPAK DI DESKTOP -->
+        <!-- Desktop Menu -->
         <div class="hidden md:flex items-center space-x-6">
           <a href="#home" class="nav-link py-2">Home</a>
           <a href="#about" class="nav-link py-2">About</a>
@@ -1165,7 +1291,7 @@
     </div>
   </section>
 
-  <!-- Daily Tasks Section -->
+  <!-- Daily Tasks Section dengan Filter -->
   <section id="tasks" style="padding: 5rem 0; background: var(--bg-secondary);">
     <div class="container mx-auto px-4">
       <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
@@ -1197,6 +1323,22 @@
         </div>
       </div>
       
+      <!-- Task Filters -->
+      <div class="flex gap-2 mb-6 task-filters">
+        <button id="filterAll" class="task-filter-btn active" onclick="filterTasks('all')">
+          <i class="fas fa-list mr-2"></i>Semua
+        </button>
+        <button id="filterPending" class="task-filter-btn" onclick="filterTasks('pending')">
+          <i class="fas fa-clock mr-2" style="color: var(--status-progress);"></i>Pending
+        </button>
+        <button id="filterCompleted" class="task-filter-btn" onclick="filterTasks('completed')">
+          <i class="fas fa-check-circle mr-2" style="color: var(--status-selesai);"></i>Selesai
+        </button>
+        <button id="filterOverdue" class="task-filter-btn" onclick="filterTasks('overdue')">
+          <i class="fas fa-exclamation-triangle mr-2" style="color: var(--status-belum);"></i>Terlewat
+        </button>
+      </div>
+      
       <!-- Tasks Grid -->
       <div id="tasksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Tasks akan di-load dari Firebase -->
@@ -1208,7 +1350,7 @@
     </div>
   </section>
 
-  <!-- Gallery Section -->
+  <!-- Gallery Section dengan Fitur Delete -->
   <section id="gallery" style="padding: 5rem 0;">
     <div class="container mx-auto px-4">
       <h2 class="text-4xl font-bold text-center mb-12">
@@ -1520,12 +1662,12 @@
     </div>
   </section>
 
-  <!-- Notes Section -->
+  <!-- Notes Section dengan Fitur Komentar Inline -->
   <section id="notes" style="padding: 5rem 0; background: var(--bg-secondary);">
     <div class="container mx-auto px-4">
       <div class="flex flex-col sm:flex-row justify-between items-center mb-12">
         <h2 class="text-4xl font-bold mb-4 sm:mb-0">
-          <span class="gradient-bg bg-clip-text text-transparent">Notes</span>
+          <span class="gradient-bg bg-clip-text text-transparent">Notes & Komentar</span>
         </h2>
         <button id="addNoteBtn" class="btn-primary">
           <i class="fas fa-plus mr-2"></i>Add Note
@@ -1683,7 +1825,7 @@
         <!-- Subtitle -->
         <div>
           <label class="block text-sm font-medium mb-2">Subtitle</label>
-          <input type="text" id="timelineSubtitle" class="form-input" placeholder="e.g.," required>
+          <input type="text" id="timelineSubtitle" class="form-input" placeholder="e.g., salsa dongo" required>
         </div>
         
         <!-- Description -->
@@ -1720,9 +1862,9 @@
     </div>
   </div>
 
-  <!-- Notes Modal -->
+  <!-- Notes Modal (tetap ada untuk menambah note baru) -->
   <div id="notesModal" class="modal">
-    <div class="modal-content max-w-md">
+    <div class="modal-content max-w-lg">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold">Add New Note</h3>
         <button onclick="closeNotesModal()" class="text-2xl hover:opacity-70">
@@ -1773,6 +1915,30 @@
     </div>
   </div>
 
+  <!-- Password Modal untuk Delete Gallery -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Konfirmasi Password</h3>
+        <button onclick="closePasswordModal()" class="text-2xl hover:opacity-70">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <p style="color: var(--text-secondary);">Masukin passwordnya dulu lh, dasar dongo :</p>
+        <input type="password" id="deletePassword" class="password-input" placeholder="Password..." autocomplete="off">
+        <input type="hidden" id="deletePhotoId">
+        <input type="hidden" id="deletePhotoUrl">
+        
+        <div class="flex gap-3 pt-4">
+          <button onclick="closePasswordModal()" class="flex-1 btn-outline">Batal</button>
+          <button onclick="verifyAndDeletePhoto()" class="flex-1 btn-primary">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ==================== FIREBASE CONFIGURATION ====================
     const firebaseConfig = {
@@ -1810,6 +1976,11 @@
     // ==================== GLOBAL VARIABLES ====================
     let currentUser = localStorage.getItem('currentUser') || 'sekre1';
     let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    let lastDoc = null;
+    let currentCategory = 'all';
+    let isLoading = false;
+    let currentTaskFilter = 'all';
+    const PASSWORD = "asyam keren"; 
 
     // ==================== THEME TOGGLE ====================
     const themeToggle = document.getElementById('themeToggle');
@@ -1845,13 +2016,14 @@
       }
     });
 
-    // ==================== USER SWITCH FUNCTIONS ====================
+    // ==================== USER SWITCH FUNCTIONS dengan POPUP BERBEDA ====================
     window.toggleUserDropdown = function() {
       const dropdown = document.getElementById('userDropdown');
       dropdown.classList.toggle('show');
     };
 
     window.switchUser = function(user) {
+      const previousUser = currentUser;
       currentUser = user;
       localStorage.setItem('currentUser', user);
       
@@ -1877,16 +2049,42 @@
       // Close dropdown
       document.getElementById('userDropdown').classList.remove('show');
       
-      // Show notification
-      Swal.fire({
-        icon: 'success',
-        title: `Halo ${user === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}!`,
-        text: 'Selamat bekerja!',
-        timer: 1500,
-        showConfirmButton: false
-      });
+      // ========== POPUP WELCOME SEKRE 1 ==========
+      if (user === 'sekre1') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Selamat Datang, Sekre 1!',
+          html: `
+            <div style="text-align: left;">
+              <p class="mb-2">👋 <strong>Halo Sekre 1!</strong></p>
+              <p class="mb-2">Anda memiliki tanggung jawab untuk memimpin dan mengkoordinir semua tugas kesekretariatan.</p>
+              <p class="mb-2">Semangat memimpin!</p>
+            </div>
+          `,
+          confirmButtonText: 'OK',
+          confirmButtonColor: 'var(--accent-primary)',
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)'
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'Halo Dongoo!',
+          html: `
+            <div style="text-align: left;">
+              <p class="mb-2">👋 <strong>Selamat datang Sekre dongo!</strong></p>
+              <p class="mb-2">Jangan lupa untuk bantuin Sekre 1 yang paling keren yaa!</p>
+              <p class="mb-2">semangatt!!!!</p>
+            </div>
+          `,
+          confirmButtonText: 'OKE, AKU BANTUIN',
+          confirmButtonColor: 'var(--accent-tertiary)',
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)'
+        });
+      }
       
-      // Reload tasks to show assignments for this user
+      // Reload tasks untuk menampilkan tugas berdasarkan user
       loadTasks();
     };
 
@@ -2077,7 +2275,7 @@
 
     window.addEventListener('scroll', updateActiveNavLink);
 
-    // ==================== TASK FUNCTIONS ====================
+    // ==================== TASK FUNCTIONS dengan FILTER ====================
     const tasksGrid = document.getElementById('tasksGrid');
     const addTaskBtn = document.getElementById('addTaskBtn');
     const taskModal = document.getElementById('taskModal');
@@ -2093,6 +2291,26 @@
     const pendingTasksEl = document.getElementById('pendingTasks');
     const completedTasksEl = document.getElementById('completedTasks');
     const overdueTasksEl = document.getElementById('overdueTasks');
+
+    // Filter buttons
+    const filterAll = document.getElementById('filterAll');
+    const filterPending = document.getElementById('filterPending');
+    const filterCompleted = document.getElementById('filterCompleted');
+    const filterOverdue = document.getElementById('filterOverdue');
+
+    // Task filter function
+    window.filterTasks = function(filter) {
+      currentTaskFilter = filter;
+      
+      // Update active state on filter buttons
+      document.querySelectorAll('.task-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+      
+      // Reload tasks with filter
+      loadTasks();
+    };
 
     // Initialize Flatpickr for task deadline
     if (taskDeadline) {
@@ -2209,7 +2427,7 @@
             Swal.fire({
               icon: 'success',
               title: 'Tugas Ditambahkan!',
-              text: 'Jangan lupa dikerjakan ya',
+              text: 'Jangan lupa dikerjakan yaa',
               timer: 2000,
               showConfirmButton: false
             });
@@ -2240,7 +2458,7 @@
         // Show celebration
         Swal.fire({
           icon: 'success',
-          title: '🎉 Tugas Selesai!',
+          title: '🎉 Yeayy Tugas Selesai!',
           text: `"${title}" telah diselesaikan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`,
           timer: 2000,
           showConfirmButton: false
@@ -2259,7 +2477,7 @@
     window.deleteTask = async function(id) {
       if (!db) return;
       
-      if (confirm('Yakin ingin menghapus tugas ini?')) {
+      if (confirm('Yakin mau menghapus tugas ini?')) {
         try {
           await db.collection('tasks').doc(id).delete();
           loadTasks();
@@ -2269,7 +2487,7 @@
       }
     };
 
-    // Load tasks
+    // Load tasks with filter
     async function loadTasks() {
       if (!tasksGrid || !db) return;
 
@@ -2301,6 +2519,12 @@
           const deadline = new Date(data.deadline);
           const deadlineTime = deadline.getTime();
           const isOverdue = deadlineTime < now && !data.completed;
+          
+          // Apply filter
+          if (currentTaskFilter === 'completed' && !data.completed) return;
+          if (currentTaskFilter === 'pending' && (data.completed || isOverdue)) return;
+          if (currentTaskFilter === 'overdue' && (!isOverdue || data.completed)) return;
+          
           const statusClass = data.completed ? 'completed' : (isOverdue ? 'overdue' : 'pending');
           
           // Determine if task should be shown based on current user
@@ -2356,7 +2580,11 @@
           `;
         });
 
-        tasksGrid.innerHTML = html || '<div class="col-span-full text-center py-12">Tidak ada tugas untuk Anda</div>';
+        if (html === '') {
+          html = '<div class="col-span-full text-center py-12">Tidak ada tugas dengan filter ini</div>';
+        }
+        
+        tasksGrid.innerHTML = html;
         updateTaskStats(tasks);
 
       } catch (error) {
@@ -2379,7 +2607,7 @@
       if (overdueTasksEl) overdueTasksEl.textContent = overdue;
     }
 
-    // ==================== TIMELINE CRUD FUNCTIONS ====================
+    // ==================== TIMELINE FUNCTIONS ====================
     const timelineContainer = document.getElementById('timelineContainer');
     const addTimelineBtn = document.getElementById('addTimelineBtn');
     const timelineModal = document.getElementById('timelineModal');
@@ -2522,7 +2750,7 @@
         return;
       }
       
-      if (confirm('Are you sure you want to delete this timeline item?')) {
+      if (confirm('Yakin banget nih mau dihapus?')) {
         try {
           await db.collection('timeline').doc(id).delete();
           alert('Timeline deleted successfully!');
@@ -2616,7 +2844,7 @@
       }
     }
 
-    // ==================== NOTES FUNCTIONS ====================
+    // ==================== NOTES FUNCTIONS dengan KOMENTAR INLINE ====================
     const notesGrid = document.getElementById('notesGrid');
     const addNoteBtn = document.getElementById('addNoteBtn');
     const notesModal = document.getElementById('notesModal');
@@ -2625,6 +2853,7 @@
     const noteCategory = document.getElementById('noteCategory');
     const noteContent = document.getElementById('noteContent');
     const noteColor = document.getElementById('noteColor');
+    
     const totalNotesEl = document.getElementById('totalNotes');
     const todayNotesEl = document.getElementById('todayNotes');
     const weekNotesEl = document.getElementById('weekNotes');
@@ -2643,24 +2872,169 @@
       });
     });
 
-    // Open notes modal
+    // Open notes modal for add
     if (addNoteBtn) {
       addNoteBtn.addEventListener('click', () => {
+        document.querySelector('#notesModal .modal-content h3').textContent = 'Add New Note';
+        notesForm.reset();
+        document.getElementById('noteTitle').disabled = false;
+        document.getElementById('noteCategory').disabled = false;
+        document.getElementById('noteContent').disabled = false;
+        document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
+        noteColor.value = '#ff6b6b';
+        
         notesModal.classList.add('show');
         document.body.style.overflow = 'hidden';
       });
     }
 
+    // Toggle komentar inline
+    window.toggleComments = async function(noteId, buttonElement) {
+      const noteCard = buttonElement.closest('.notes-card');
+      let commentsContainer = noteCard.querySelector('.inline-comments-container');
+      
+      if (commentsContainer) {
+        if (commentsContainer.style.display === 'none') {
+          commentsContainer.style.display = 'block';
+          buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Sembunyikan Komentar';
+        } else {
+          commentsContainer.style.display = 'none';
+          buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Komentar';
+        }
+        return;
+      }
+      
+      commentsContainer = document.createElement('div');
+      commentsContainer.className = 'inline-comments-container';
+      
+      commentsContainer.innerHTML = '<div class="text-center py-2"><div class="loading-spinner" style="width: 20px; height: 20px;"></div></div>';
+      noteCard.appendChild(commentsContainer);
+      
+      await loadInlineComments(noteId, commentsContainer);
+      
+      buttonElement.innerHTML = '<i class="fas fa-comment mr-1"></i>Sembunyikan Komentar';
+    };
+
+    // Load komentar inline
+    async function loadInlineComments(noteId, container) {
+      if (!db) return;
+      
+      try {
+        const snapshot = await db.collection('notes').doc(noteId)
+          .collection('comments')
+          .orderBy('timestamp', 'asc')
+          .get();
+        
+        let html = '<div class="comments-list space-y-2 max-h-48 overflow-y-auto mb-3">';
+        
+        if (snapshot.empty) {
+          html += '<p class="text-center text-sm py-2" style="color: var(--text-secondary);">Belum ada komentar</p>';
+        } else {
+          snapshot.forEach(doc => {
+            const comment = doc.data();
+            const date = new Date(comment.timestamp);
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            const isCurrentUser = comment.user === currentUser;
+            
+            html += `
+              <div class="flex ${isCurrentUser ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[90%] p-2 rounded-lg text-sm" 
+                     style="background: ${isCurrentUser ? 'var(--accent-primary)' : 'var(--bg-card)'}; 
+                            color: ${isCurrentUser ? 'white' : 'var(--text-primary)'};
+                            border: 1px solid var(--border-glow);">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-semibold ${isCurrentUser ? 'text-white/80' : ''}">
+                      ${comment.user === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}
+                    </span>
+                    <span class="text-xs opacity-70">${timeStr}</span>
+                  </div>
+                  <p class="text-xs">${comment.text}</p>
+                </div>
+              </div>
+            `;
+          });
+        }
+        
+        html += '</div>';
+        
+        html += `
+          <div class="flex gap-2">
+            <input type="text" id="inline-comment-${noteId}" placeholder="Tulis komentar..." 
+                   class="flex-1 form-input text-xs py-1.5"
+                   data-note-id="${noteId}">
+            <button onclick="addInlineComment('${noteId}')" class="btn-primary py-1.5 px-3 text-xs">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        const input = document.getElementById(`inline-comment-${noteId}`);
+        if (input) {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              addInlineComment(noteId);
+            }
+          });
+        }
+        
+        const commentsList = container.querySelector('.comments-list');
+        if (commentsList) {
+          commentsList.scrollTop = commentsList.scrollHeight;
+        }
+        
+      } catch (error) {
+        console.error('Error loading inline comments:', error);
+        container.innerHTML = '<p class="text-center text-sm text-red-400">Error loading comments</p>';
+      }
+    }
+
+    // Tambah komentar inline
+    window.addInlineComment = async function(noteId) {
+      const input = document.getElementById(`inline-comment-${noteId}`);
+      const text = input.value.trim();
+      
+      if (!text || !db) return;
+      
+      try {
+        await db.collection('notes').doc(noteId)
+          .collection('comments')
+          .add({
+            text: text,
+            user: currentUser,
+            timestamp: Date.now(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        
+        input.value = '';
+        
+        const noteCard = input.closest('.notes-card');
+        const commentsContainer = noteCard.querySelector('.inline-comments-container');
+        if (commentsContainer) {
+          await loadInlineComments(noteId, commentsContainer);
+        }
+        
+        const noteDoc = await db.collection('notes').doc(noteId).get();
+        const noteData = noteDoc.data();
+        
+        addNotification(
+          `💬 Komentar baru pada note "${noteData.title}" dari ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`,
+          'info'
+        );
+        
+      } catch (error) {
+        console.error('Error adding inline comment:', error);
+        alert('Gagal menambahkan komentar');
+      }
+    };
+
     // Close notes modal
     window.closeNotesModal = function() {
       notesModal.classList.remove('show');
       document.body.style.overflow = 'auto';
-      notesForm.reset();
-      noteColor.value = '#ff6b6b';
-      document.querySelectorAll('.color-option').forEach(opt => {
-        opt.style.transform = 'scale(1)';
-        opt.style.border = 'none';
-      });
     };
 
     // Submit note
@@ -2687,12 +3061,16 @@
             content,
             color,
             timestamp: Date.now(),
+            createdBy: currentUser,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
           alert('Note added successfully!');
           closeNotesModal();
           loadNotes();
+          
+          addNotification(`📝 Note baru: "${title}" ditambahkan oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'info');
+          
         } catch (error) {
           console.error('❌ Error adding note:', error);
           alert('Failed to add note: ' + error.message);
@@ -2707,10 +3085,22 @@
         return;
       }
       
-      if (confirm('Are you sure you want to delete this note?')) {
+      if (confirm('Yakin banget nih mau dihapus?')) {
         try {
-          await db.collection('notes').doc(id).delete();
+          const commentsSnapshot = await db.collection('notes').doc(id).collection('comments').get();
+          const batch = db.batch();
+          
+          commentsSnapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          batch.delete(db.collection('notes').doc(id));
+          await batch.commit();
+          
           loadNotes();
+          
+          addNotification(`🗑️ Note telah dihapus oleh ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}`, 'info');
+          
         } catch (error) {
           console.error('❌ Error deleting note:', error);
           alert('Failed to delete note: ' + error.message);
@@ -2736,6 +3126,7 @@
             <div class="col-span-full text-center py-12">
               <i class="fas fa-sticky-note text-5xl mb-4" style="color: var(--text-secondary); opacity: 0.5;"></i>
               <p style="color: var(--text-secondary);">No notes yet</p>
+              <p class="text-sm mt-2">Klik "Add Note" untuk membuat catatan pertama!</p>
             </div>
           `;
           updateNotesStats([]);
@@ -2762,14 +3153,23 @@
             <div class="notes-card" style="border-left: 4px solid ${data.color};">
               <div class="flex justify-between items-start mb-3">
                 <span class="text-xs px-2 py-1 rounded-full" style="background: ${data.color}20; color: ${data.color};">${data.category}</span>
-                <button onclick="deleteNote('${doc.id}')" class="text-sm hover:opacity-70" style="color: var(--text-secondary);">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex gap-2">
+                  <button onclick="toggleComments('${doc.id}', this)" 
+                          class="text-sm hover:opacity-70 px-2 py-1 rounded" 
+                          style="color: var(--accent-primary); background: var(--accent-primary)20;" 
+                          title="Lihat & Komentar">
+                    <i class="fas fa-comment mr-1"></i>Komentar
+                  </button>
+                  <button onclick="deleteNote('${doc.id}')" class="text-sm hover:opacity-70" style="color: var(--text-secondary);">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </div>
               <h3 class="text-lg font-bold mb-2">${data.title}</h3>
               <p class="text-sm mb-4" style="color: var(--text-secondary);">${data.content}</p>
-              <div class="text-xs" style="color: var(--text-secondary);">
-                <i class="far fa-clock mr-1"></i>${formattedDate}
+              <div class="text-xs flex justify-between items-center" style="color: var(--text-secondary);">
+                <span><i class="far fa-clock mr-1"></i>${formattedDate}</span>
+                <span><i class="far fa-user mr-1"></i>${data.createdBy === 'sekre1' ? 'Sekre 1' : 'Sekre 2'}</span>
               </div>
             </div>
           `;
@@ -2783,6 +3183,7 @@
         notesGrid.innerHTML = `
           <div class="col-span-full text-center py-12 text-red-400">
             <p>Error loading notes: ${error.message}</p>
+            <button onclick="loadNotes()" class="mt-4 btn-primary">Try Again</button>
           </div>
         `;
       }
@@ -2805,11 +3206,7 @@
       if (monthNotesEl) monthNotesEl.textContent = month;
     }
 
-    // ==================== GALLERY FUNCTIONS ====================
-    let lastDoc = null;
-    let currentCategory = 'all';
-    let isLoading = false;
-
+    // ==================== GALLERY FUNCTIONS dengan DELETE ====================
     const uploadForm = document.getElementById('uploadForm');
     const imageFile = document.getElementById('imageFile');
     const imageCaption = document.getElementById('imageCaption');
@@ -2825,7 +3222,7 @@
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const loadingIndicator = document.getElementById('galleryLoading');
 
-    // Gallery modal function (MUST BE GLOBAL)
+    // Gallery modal function
     window.openGalleryModal = function(url, caption, category, timestamp) {
       const modal = document.createElement('div');
       modal.className = 'modal show';
@@ -2866,32 +3263,77 @@
       });
     };
 
-    // Add default gallery image to Firebase
-    async function addDefaultGalleryImages() {
-      if (!db) return;
+    // Password modal functions
+    window.openPasswordModal = function(photoId, photoUrl) {
+      document.getElementById('deletePhotoId').value = photoId;
+      document.getElementById('deletePhotoUrl').value = photoUrl;
+      document.getElementById('deletePassword').value = '';
+      document.getElementById('passwordModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      
+      setTimeout(() => {
+        document.getElementById('deletePassword').focus();
+      }, 500);
+    };
+
+    window.closePasswordModal = function() {
+      document.getElementById('passwordModal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+      document.getElementById('deletePassword').value = '';
+    };
+
+    window.verifyAndDeletePhoto = async function() {
+      const password = document.getElementById('deletePassword').value;
+      const photoId = document.getElementById('deletePhotoId').value;
+      const photoUrl = document.getElementById('deletePhotoUrl').value;
+      
+      if (!password) {
+        alert('Masukkan password dulu dongoo!');
+        return;
+      }
+      
+      if (password !== PASSWORD) {
+        alert('Salah dongo!');
+        document.getElementById('deletePassword').value = '';
+        document.getElementById('deletePassword').focus();
+        return;
+      }
       
       try {
-        const snapshot = await db.collection('gallery')
-          .where('caption', '==', 'sekre')
-          .where('category', '==', 'personal')
-          .limit(1)
-          .get();
-
-        if (snapshot.empty) {
-          await db.collection('gallery').add({
-            filename: 'gallery/sekre1.jpeg',
-            url: 'img/sekre1.jpeg',
-            caption: 'sekre',
-            category: 'personal',
-            timestamp: Date.now() - 86400000,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          console.log('✅ Default gallery image added');
+        if (!db || !storage) throw new Error('Firebase not initialized');
+        
+        await db.collection('gallery').doc(photoId).delete();
+        
+        try {
+          const photoRef = storage.refFromURL(photoUrl);
+          await photoRef.delete();
+        } catch (storageError) {
+          console.log('Storage delete error:', storageError);
         }
+        
+        const photoElement = document.querySelector(`[data-firebase-id="${photoId}"]`);
+        if (photoElement) {
+          photoElement.remove();
+        }
+        
+        closePasswordModal();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Foto berhasil dihapus',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        addNotification('📸 ngaku kan??', 'info');
+        
       } catch (error) {
-        console.error('❌ Error adding default gallery image:', error);
+        console.error('Error deleting photo:', error);
+        alert('Gagal menghapus foto: ' + error.message);
+        closePasswordModal();
       }
-    }
+    };
 
     // Upload photo
     if (uploadForm) {
@@ -3018,10 +3460,6 @@
           snapshot.forEach(doc => {
             const data = doc.data();
             
-            if (data.caption === 'sekre' && data.category === 'personal') {
-              return;
-            }
-            
             const existingPhoto = document.querySelector(`[data-firebase-id="${doc.id}"]`);
             if (existingPhoto) return;
             
@@ -3041,6 +3479,16 @@
                 <p class="text-xs text-gray-300 mt-1">${data.category} • ${formattedDate}</p>
               </div>
             `;
+            
+            // Add delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'gallery-delete-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.setAttribute('onclick', `event.stopPropagation(); openPasswordModal('${doc.id}', '${data.url}')`);
+            deleteBtn.setAttribute('title', 'Hapus foto (password required)');
+            
+            div.appendChild(deleteBtn);
+            div.style.position = 'relative';
             
             galleryGrid.appendChild(div);
           });
@@ -3101,10 +3549,8 @@
     document.addEventListener('DOMContentLoaded', function() {
       console.log('📄 DOM loaded');
       
-      // Initialize current user
       switchUser(currentUser);
       
-      // Render notifications
       renderNotifications();
       updateNotificationBadge();
       
@@ -3114,7 +3560,6 @@
           loadNotes();
           loadTasks();
           loadGallery(true);
-          addDefaultGalleryImages();
           
         }, 500);
       }
@@ -3127,6 +3572,17 @@
           modal.classList.remove('show');
           document.body.style.overflow = 'auto';
         });
+        closePasswordModal();
+      }
+    });
+
+    // Close password modal when clicking outside
+    document.addEventListener('click', function(e) {
+      const passwordModal = document.getElementById('passwordModal');
+      if (passwordModal && passwordModal.classList.contains('show')) {
+        if (e.target === passwordModal) {
+          closePasswordModal();
+        }
       }
     });
   </script>
