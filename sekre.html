@@ -58,6 +58,7 @@
       --priority-high: #ef4444;
       --priority-medium: #f59e0b;
       --priority-low: #10b981;
+      --whatsapp-color: #25D366;
     }
 
     .light {
@@ -478,29 +479,46 @@
       color: white;
     }
 
-    /* Footer WhatsApp Button */
-    .footer-whatsapp-btn {
-      width: 45px;
-      height: 45px;
+    /* Footer Social Icons */
+    .footer-social-icon {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: #25D366;
-      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       transition: all 0.3s ease;
-      border: none;
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+      border: 1px solid var(--border-glow);
+      background: var(--bg-card);
+      color: var(--accent-primary);
+      cursor: pointer;
     }
 
-    .footer-whatsapp-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+    .footer-social-icon:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px var(--shadow-color);
     }
 
-    .footer-whatsapp-btn i {
-      font-size: 24px;
+    .footer-social-icon.whatsapp {
+      color: var(--whatsapp-color);
+    }
+
+    .footer-social-icon.whatsapp:hover {
+      background: var(--whatsapp-color);
+      color: white;
+      border-color: var(--whatsapp-color);
+    }
+
+    .footer-social-icon.github:hover {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .footer-social-icon.instagram:hover {
+      background: var(--accent-tertiary);
+      color: white;
+      border-color: var(--accent-tertiary);
     }
 
     /* Deadline reminder badge */
@@ -1944,15 +1962,18 @@
         </div>
         
         <div class="flex space-x-4 mb-4 md:mb-0">
-          <a href="https://github.com/Syam192" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
-            <i class="fab fa-github" style="color: var(--accent-primary);"></i>
-          </a>
-          <a href="https://www.instagram.com/seshabie" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center transition" style="background: var(--bg-card); border: 1px solid var(--border-glow);">
-            <i class="fab fa-instagram" style="color: var(--accent-tertiary);"></i>
+          <!-- GitHub -->
+          <a href="https://github.com/Syam192" target="_blank" class="footer-social-icon github" title="GitHub">
+            <i class="fab fa-github"></i>
           </a>
           
-          <!-- WhatsApp Footer Button -->
-          <button onclick="shareFooterWhatsApp()" class="footer-whatsapp-btn" title="Hubungi via WhatsApp">
+          <!-- Instagram -->
+          <a href="https://www.instagram.com/seshabie" target="_blank" class="footer-social-icon instagram" title="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          
+          <!-- WhatsApp Footer Button (style sama) -->
+          <button onclick="shareFooterWhatsApp()" class="footer-social-icon whatsapp" title="Hubungi via WhatsApp">
             <i class="fab fa-whatsapp"></i>
           </button>
         </div>
@@ -2844,17 +2865,18 @@
       sendWhatsApp(phoneNumber, title, desc, deadline, priority);
     };
 
-    // Fungsi untuk WhatsApp di footer
+    // ==================== FOOTER WHATSAPP FUNCTION ====================
     window.shareFooterWhatsApp = function() {
       let phoneNumber;
+      let message;
       
       if (currentUser === 'sekre1') {
         phoneNumber = WHATSAPP_NUMBERS.sekre1;
+        message = "Halo, Sekre dongoo. Mau nanya";
       } else {
         phoneNumber = WHATSAPP_NUMBERS.sekre2;
+        message = "Halo, Sekre 1 MPK yang keren, baik hati dan tidak sombong. Mau minta tolong dongg";
       }
-      
-      const message = `Halo, saya adalah ${currentUser === 'sekre1' ? 'Sekre 1' : 'Sekre 2'} dari MPK. Ada yang bisa dibantu?`;
       
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
@@ -3217,7 +3239,9 @@
               <div class="countdown-container normal" id="countdown-container-${doc.id}">
                 <div id="countdown-${doc.id}"></div>
               </div>
-                            
+              
+              <!-- Timer Stopwatch Section -->
+
               <div class="flex justify-between items-center mt-4">
                 <div>
                   ${data.completed ? 
