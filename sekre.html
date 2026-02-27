@@ -3510,28 +3510,7 @@
               <div class="countdown-container normal" id="countdown-container-${doc.id}">
                 <div id="countdown-${doc.id}"></div>
               </div>
-              
-              <!-- Timer Stopwatch Section -->
-              <div class="timer-container">
-                <i class="fas fa-stopwatch" style="color: var(--accent-primary);"></i>
-                <span class="timer-display" id="timer-${doc.id}">${timerDisplay}</span>
-                <div class="flex gap-1 ml-auto">
-                  ${!data.completed ? `
-                    ${!timerData.isRunning ? 
-                      `<button onclick="startTimer('${doc.id}')" class="timer-btn start" title="Mulai Timer">
-                        <i class="fas fa-play"></i>
-                      </button>` :
-                      `<button onclick="pauseTimer('${doc.id}')" class="timer-btn pause" title="Jeda Timer">
-                        <i class="fas fa-pause"></i>
-                      </button>`
-                    }
-                    <button onclick="resetTimer('${doc.id}')" class="timer-btn stop" title="Reset Timer">
-                      <i class="fas fa-stop"></i>
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-              
+                            
               <div class="flex justify-between items-center mt-4">
                 <div>
                   ${data.completed ? 
