@@ -1222,16 +1222,6 @@
       border-radius: 5px;
     }
 
-    /* Body no scroll class */
-    body.modal-open {
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      right: 0;
-    }
-
     /* Responsive Design */
     @media (max-width: 768px) {
       .timeline::before {
@@ -2649,130 +2639,6 @@
       }
     }
 
-    // ==================== GALLERY MODAL FUNCTION YANG DIPERBAIKI ====================
-    window.openGalleryModal = function(url, caption, category, timestamp) {
-      // Simpan posisi scroll saat ini sebelum modal dibuka
-      const scrollY = window.scrollY;
-      
-      const modal = document.createElement('div');
-      modal.className = 'modal show';
-      modal.setAttribute('data-modal', 'gallery');
-      
-      const date = new Date(timestamp);
-      const formattedDate = date.toLocaleDateString('id-ID', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-
-      modal.innerHTML = `
-        <div class="modal-content max-w-3xl" onclick="event.stopPropagation()">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">${caption}</h3>
-            <button onclick="closeGalleryModal(this)" class="text-2xl hover:opacity-70">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <img src="${url}" alt="${caption}" class="w-full max-h-[70vh] object-contain rounded-lg" onerror="this.src='https://via.placeholder.com/400'">
-          <div class="mt-4">
-            <p class="font-semibold">${caption || '-'}</p>
-            <p class="text-sm mt-1" style="color: var(--text-secondary);">${category} • ${formattedDate}</p>
-          </div>
-        </div>
-      `;
-
-      // Tambahkan style untuk mencegah scroll di body
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-
-      document.body.appendChild(modal);
-
-      // Event listener untuk klik di luar modal
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-          closeGalleryModal();
-        }
-      });
-
-      // Prevent touchmove on modal background untuk mobile
-      modal.addEventListener('touchmove', function(e) {
-        if (e.target === modal) {
-          e.preventDefault();
-        }
-      }, { passive: false });
-    };
-
-    // ==================== FUNGSI UNTUK MENUTUP GALLERY MODAL ====================
-    window.closeGalleryModal = function(button) {
-      const modal = button ? button.closest('.modal') : document.querySelector('.gallery-modal, .modal[data-modal="gallery"]');
-      
-      if (modal) {
-        // Kembalikan scroll ke posisi semula
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
-        
-        modal.remove();
-      }
-    };
-
-    // Override fungsi openPasswordModal yang sudah ada
-    const originalOpenPasswordModal = window.openPasswordModal;
-    window.openPasswordModal = function(photoId, photoUrl) {
-      // Simpan posisi scroll
-      const scrollY = window.scrollY;
-      
-      document.getElementById('deletePhotoId').value = photoId;
-      document.getElementById('deletePhotoUrl').value = photoUrl;
-      document.getElementById('deletePassword').value = '';
-      
-      const modal = document.getElementById('passwordModal');
-      modal.classList.add('show');
-      modal.setAttribute('data-modal', 'password');
-      
-      // Lock scroll
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
-      setTimeout(() => {
-        document.getElementById('deletePassword').focus();
-      }, 500);
-    };
-
-    // Override closePasswordModal yang sudah ada
-    const originalClosePasswordModal = window.closePasswordModal;
-    window.closePasswordModal = function() {
-      const modal = document.getElementById('passwordModal');
-      if (modal) {
-        modal.classList.remove('show');
-        
-        // Kembalikan scroll
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
-        
-        document.getElementById('deletePassword').value = '';
-      }
-    };
-
     // Open task modal for add
     if (addTaskBtn) {
       addTaskBtn.addEventListener('click', function() {
@@ -2782,35 +2648,15 @@
         if (taskDeadline && taskDeadline._flatpickr) {
           taskDeadline._flatpickr.clear();
         }
-        
-        // Simpan posisi scroll
-        const scrollY = window.scrollY;
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        
         taskModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
       });
     }
 
     // Close task modal
     window.closeTaskModal = function() {
-      const modal = document.getElementById('taskModal');
-      if (modal) {
-        modal.classList.remove('show');
-        
-        // Kembalikan scroll
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
-      }
+      taskModal.classList.remove('show');
+      document.body.style.overflow = 'auto';
     };
 
     // Open task modal for edit
@@ -2830,14 +2676,8 @@
         radio.checked = radio.value === priority;
       });
       
-      // Simpan posisi scroll
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
       taskModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
     };
 
     // Submit task form
@@ -2927,117 +2767,6 @@
         }
       });
     }
-
-    // ==================== TIMELINE MODAL FUNCTIONS ====================
-    // Open timeline modal for add
-    if (addTimelineBtn) {
-      addTimelineBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (timelineModal) {
-          timelineModalTitle.textContent = 'Add Timeline';
-          timelineForm.reset();
-          timelineId.value = '';
-          if (timelineDate && timelineDate._flatpickr) {
-            timelineDate._flatpickr.clear();
-          }
-          selectStatus('progress');
-          
-          // Simpan posisi scroll
-          const scrollY = window.scrollY;
-          document.body.style.overflow = 'hidden';
-          document.body.style.position = 'fixed';
-          document.body.style.top = `-${scrollY}px`;
-          document.body.style.width = '100%';
-          
-          timelineModal.classList.add('show');
-        }
-      });
-    }
-
-    // Open timeline modal for edit
-    window.editTimeline = function(id, date, title, subtitle, desc, status) {
-      if (timelineModal) {
-        timelineModalTitle.textContent = 'Edit Timeline';
-        timelineId.value = id;
-        if (timelineDate && timelineDate._flatpickr) {
-          timelineDate._flatpickr.setDate(date);
-        }
-        timelineTitle.value = title;
-        timelineSubtitle.value = subtitle;
-        timelineDesc.value = desc || '';
-        selectStatus(status || 'progress');
-        
-        // Simpan posisi scroll
-        const scrollY = window.scrollY;
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        
-        timelineModal.classList.add('show');
-      }
-    };
-
-    // Close timeline modal
-    window.closeTimelineModal = function() {
-      const modal = document.getElementById('timelineModal');
-      if (modal) {
-        modal.classList.remove('show');
-        
-        // Kembalikan scroll
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
-      }
-    };
-
-    // ==================== NOTES MODAL FUNCTIONS ====================
-    // Open notes modal for add
-    if (addNoteBtn) {
-      addNoteBtn.addEventListener('click', () => {
-        document.querySelector('#notesModal .modal-content h3').textContent = 'Add New Note';
-        notesForm.reset();
-        document.getElementById('noteTitle').disabled = false;
-        document.getElementById('noteCategory').disabled = false;
-        document.getElementById('noteContent').disabled = false;
-        document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
-        noteColor.value = '#ff6b6b';
-        
-        // Simpan posisi scroll
-        const scrollY = window.scrollY;
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        
-        notesModal.classList.add('show');
-      });
-    }
-
-    // Close notes modal
-    window.closeNotesModal = function() {
-      const modal = document.getElementById('notesModal');
-      if (modal) {
-        modal.classList.remove('show');
-        
-        // Kembalikan scroll
-        const scrollY = document.body.style.top;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
-      }
-    };
 
     // ==================== COUNTDOWN TIMER FUNCTIONS ====================
     function formatCountdown(deadline) {
@@ -3495,7 +3224,7 @@
           
           html += `
             <div class="task-card ${statusClass}" id="task-${doc.id}">
-              ${showReminder ? '<div class="deadline-reminder"><i class="fas fa-exclamation-circle mr-1"></i>Deadline WOIYY!</div>' : ''}
+              ${showReminder ? '<div class="deadline-reminder"><i class="fas fa-exclamation-circle mr-1"></i>Deadline Mendekat!</div>' : ''}
               <div class="task-priority ${data.priority}"></div>
               <div class="flex justify-between items-start mb-3">
                 <span class="task-assignee ${assigneeClass}">${assigneeText}</span>
@@ -3510,7 +3239,9 @@
               <div class="countdown-container normal" id="countdown-container-${doc.id}">
                 <div id="countdown-${doc.id}"></div>
               </div>
-                            
+              
+              <!-- Timer Stopwatch Section -->
+
               <div class="flex justify-between items-center mt-4">
                 <div>
                   ${data.completed ? 
@@ -3637,6 +3368,50 @@
         });
         const selected = document.querySelector(`.status-option[data-status="${status}"]`);
         if (selected) selected.classList.add('selected');
+      }
+    };
+
+    // Open timeline modal for add
+    if (addTimelineBtn) {
+      addTimelineBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (timelineModal) {
+          timelineModalTitle.textContent = 'Add Timeline';
+          if (timelineForm) timelineForm.reset();
+          if (timelineId) timelineId.value = '';
+          if (timelineDate && timelineDate._flatpickr) {
+            timelineDate._flatpickr.clear();
+          }
+          selectStatus('progress');
+          timelineModal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }
+
+    // Open timeline modal for edit
+    window.editTimeline = function(id, date, title, subtitle, desc, status) {
+      if (timelineModal) {
+        timelineModalTitle.textContent = 'Edit Timeline';
+        timelineId.value = id;
+        if (timelineDate && timelineDate._flatpickr) {
+          timelineDate._flatpickr.setDate(date);
+        }
+        timelineTitle.value = title;
+        timelineSubtitle.value = subtitle;
+        timelineDesc.value = desc || '';
+        selectStatus(status || 'progress');
+        
+        timelineModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    };
+
+    // Close timeline modal
+    window.closeTimelineModal = function() {
+      if (timelineModal) {
+        timelineModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
       }
     };
 
@@ -3823,6 +3598,22 @@
       });
     });
 
+    // Open notes modal for add
+    if (addNoteBtn) {
+      addNoteBtn.addEventListener('click', () => {
+        document.querySelector('#notesModal .modal-content h3').textContent = 'Add New Note';
+        notesForm.reset();
+        document.getElementById('noteTitle').disabled = false;
+        document.getElementById('noteCategory').disabled = false;
+        document.getElementById('noteContent').disabled = false;
+        document.querySelector('#notesForm button[type="submit"]').style.display = 'block';
+        noteColor.value = '#ff6b6b';
+        
+        notesModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
     // Toggle komentar inline
     window.toggleComments = async function(noteId, buttonElement) {
       const noteCard = buttonElement.closest('.notes-card');
@@ -3964,6 +3755,12 @@
         console.error('Error adding inline comment:', error);
         alert('Gagal menambahkan komentar');
       }
+    };
+
+    // Close notes modal
+    window.closeNotesModal = function() {
+      notesModal.classList.remove('show');
+      document.body.style.overflow = 'auto';
     };
 
     // Submit note
@@ -4152,6 +3949,121 @@
     const refreshBtn = document.getElementById('refreshGallery');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const loadingIndicator = document.getElementById('galleryLoading');
+
+    // Gallery modal function
+    window.openGalleryModal = function(url, caption, category, timestamp) {
+      const modal = document.createElement('div');
+      modal.className = 'modal show';
+      
+      const date = new Date(timestamp);
+      const formattedDate = date.toLocaleDateString('id-ID', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      modal.innerHTML = `
+        <div class="modal-content max-w-3xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Photo Preview</h3>
+            <button onclick="this.closest('.modal').remove()" class="text-2xl hover:opacity-70">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <img src="${url}" alt="${caption}" class="w-full max-h-[70vh] object-contain rounded-lg" onerror="this.src='https://via.placeholder.com/400'">
+          <div class="mt-4">
+            <p class="font-semibold">${caption || '-'}</p>
+            <p class="text-sm mt-1" style="color: var(--text-secondary);">${category} • ${formattedDate}</p>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      document.body.style.overflow = 'hidden';
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          document.body.style.overflow = 'auto';
+        }
+      });
+    };
+
+    // Password modal functions
+    window.openPasswordModal = function(photoId, photoUrl) {
+      document.getElementById('deletePhotoId').value = photoId;
+      document.getElementById('deletePhotoUrl').value = photoUrl;
+      document.getElementById('deletePassword').value = '';
+      document.getElementById('passwordModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      
+      setTimeout(() => {
+        document.getElementById('deletePassword').focus();
+      }, 500);
+    };
+
+    window.closePasswordModal = function() {
+      document.getElementById('passwordModal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+      document.getElementById('deletePassword').value = '';
+    };
+
+    window.verifyAndDeletePhoto = async function() {
+      const password = document.getElementById('deletePassword').value;
+      const photoId = document.getElementById('deletePhotoId').value;
+      const photoUrl = document.getElementById('deletePhotoUrl').value;
+      
+      if (!password) {
+        alert('Masukkan password dulu dongoo!');
+        return;
+      }
+      
+      if (password !== PASSWORD) {
+        alert('Salah dongo!');
+        document.getElementById('deletePassword').value = '';
+        document.getElementById('deletePassword').focus();
+        return;
+      }
+      
+      try {
+        if (!db || !storage) throw new Error('Firebase not initialized');
+        
+        await db.collection('gallery').doc(photoId).delete();
+        console.log('✅ Gallery item deleted from Firestore:', photoId);
+        
+        try {
+          const photoRef = storage.refFromURL(photoUrl);
+          await photoRef.delete();
+          console.log('✅ Gallery image deleted from Storage');
+        } catch (storageError) {
+          console.log('Storage delete error (might be already deleted):', storageError);
+        }
+        
+        const photoElement = document.querySelector(`[data-firebase-id="${photoId}"]`);
+        if (photoElement) {
+          photoElement.remove();
+        }
+        
+        closePasswordModal();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Foto berhasil dihapus',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        addNotification('📸 ngaku kan??', 'info');
+        
+      } catch (error) {
+        console.error('Error deleting photo:', error);
+        alert('Gagal menghapus foto: ' + error.message);
+        closePasswordModal();
+      }
+    };
 
     // Upload photo
     if (uploadForm) {
@@ -4368,62 +4280,6 @@
       });
     }
 
-    // ==================== PASSWORD DELETE FUNCTIONS ====================
-    window.verifyAndDeletePhoto = async function() {
-      const password = document.getElementById('deletePassword').value;
-      const photoId = document.getElementById('deletePhotoId').value;
-      const photoUrl = document.getElementById('deletePhotoUrl').value;
-      
-      if (!password) {
-        alert('Masukkan password dulu dongoo!');
-        return;
-      }
-      
-      if (password !== PASSWORD) {
-        alert('Salah dongo!');
-        document.getElementById('deletePassword').value = '';
-        document.getElementById('deletePassword').focus();
-        return;
-      }
-      
-      try {
-        if (!db || !storage) throw new Error('Firebase not initialized');
-        
-        await db.collection('gallery').doc(photoId).delete();
-        console.log('✅ Gallery item deleted from Firestore:', photoId);
-        
-        try {
-          const photoRef = storage.refFromURL(photoUrl);
-          await photoRef.delete();
-          console.log('✅ Gallery image deleted from Storage');
-        } catch (storageError) {
-          console.log('Storage delete error (might be already deleted):', storageError);
-        }
-        
-        const photoElement = document.querySelector(`[data-firebase-id="${photoId}"]`);
-        if (photoElement) {
-          photoElement.remove();
-        }
-        
-        closePasswordModal();
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Foto berhasil dihapus',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        
-        addNotification('📸 ngaku kan??', 'info');
-        
-      } catch (error) {
-        console.error('Error deleting photo:', error);
-        alert('Gagal menghapus foto: ' + error.message);
-        closePasswordModal();
-      }
-    };
-
     // ==================== INITIAL LOAD ====================
     document.addEventListener('DOMContentLoaded', function() {
       console.log('📄 DOM loaded');
@@ -4437,26 +4293,13 @@
       // Fungsi loadAllData dipanggil setelah Firestore connection sukses
     });
 
-    // ==================== ESCAPE KEY HANDLER ====================
+    // Close modals with Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        const openModals = document.querySelectorAll('.modal.show');
-        if (openModals.length > 0) {
-          openModals.forEach(modal => {
-            modal.classList.remove('show');
-          });
-          
-          // Kembalikan scroll
-          const scrollY = document.body.style.top;
-          document.body.style.overflow = '';
-          document.body.style.position = '';
-          document.body.style.top = '';
-          document.body.style.width = '';
-          
-          if (scrollY) {
-            window.scrollTo(0, parseInt(scrollY) * -1);
-          }
-        }
+        document.querySelectorAll('.modal.show').forEach(modal => {
+          modal.classList.remove('show');
+          document.body.style.overflow = 'auto';
+        });
         closePasswordModal();
       }
     });
